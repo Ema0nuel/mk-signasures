@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/products";
 import ProductCard from "@/components/product/product-card";
 import SortBar from "@/components/shop/sort-bar";
+import ShopSearch from "@/components/shop/shop-search";
 import type { ProductWithCategory } from "@/types/database";
 
 export const metadata: Metadata = {
@@ -105,16 +106,19 @@ async function ShopContent({
   const sorted = sortProducts(products, sort);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       {/* Header */}
       <div className="bg-secondary py-12 sm:py-16 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto text-center relative">
           <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-light">
             {pageTitle}
           </h1>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
             {pageDescription}
           </p>
+          <div className="mt-6 flex justify-center relative">
+            <ShopSearch />
+          </div>
         </div>
       </div>
 

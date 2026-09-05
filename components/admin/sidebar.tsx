@@ -8,7 +8,6 @@ import {
   FolderTree,
   ShoppingCart,
   Users,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -44,11 +43,6 @@ const navItems = [
     label: "Customers",
     href: "/admin/customers",
     icon: Users,
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
   },
 ];
 

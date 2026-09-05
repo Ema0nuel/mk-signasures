@@ -209,6 +209,7 @@ export interface Order {
   paid_at: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
+  emails_sent: boolean;
   created_at: string;
   updated_at: string;
 }

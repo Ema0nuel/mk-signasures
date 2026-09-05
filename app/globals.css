@@ -191,4 +191,8 @@ a, button, [role="button"], input, select, textarea {
   html {
     @apply font-sans;
   }
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
 }

@@ -116,20 +116,50 @@ export async function searchProducts(
 ): Promise<ProductWithCategory[]> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    const q = query.trim();
+
+    const { data: byNameDesc, error: e1 } = await supabase
       .from("products")
       .select("*, categories(*), product_images(*)")
       .eq("status", "active")
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
+      .or(`name.ilike.%${q}%,description.ilike.%${q}%`)
       .order("created_at", { ascending: false })
       .limit(20);
 
-    if (error) {
-      console.error("Failed to search products:", error.message);
+    const { data: byCategory, error: e2 } = await supabase
+      .from("products")
+      .select("*, categories!inner(*), product_images(*)")
+      .eq("status", "active")
+      .ilike("categories.name", `%${q}%`)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (e1 && e2) {
+      console.error("Failed to search products:", e1.message, e2.message);
       return [];
     }
 
-    return (data ?? []) as unknown as ProductWithCategory[];
+    const qLower = q.toLowerCase();
+    const { data: allForTags } = await supabase
+      .from("products")
+      .select("*, categories(*), product_images(*)")
+      .eq("status", "active")
+      .limit(50);
+
+    const byTags = (allForTags ?? []).filter((p: ProductWithCategory) =>
+      p.tags?.some((t) => t.toLowerCase().includes(qLower))
+    );
+
+    const merged = new Map<string, ProductWithCategory>();
+    for (const p of [
+      ...((byNameDesc ?? []) as unknown as ProductWithCategory[]),
+      ...((byCategory ?? []) as unknown as ProductWithCategory[]),
+      ...byTags,
+    ]) {
+      if (!merged.has(p.id)) merged.set(p.id, p);
+    }
+
+    return Array.from(merged.values()).slice(0, 20);
   } catch {
     return [];
   }

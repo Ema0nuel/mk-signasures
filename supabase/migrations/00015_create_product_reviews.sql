@@ -57,7 +57,7 @@ CREATE POLICY "Admins can manage all reviews"
 CREATE TRIGGER set_product_reviews_updated_at
   BEFORE UPDATE ON public.product_reviews
   FOR EACH ROW
-  EXECUTE FUNCTION public.set_updated_at();
+  EXECUTE FUNCTION public.update_updated_at();
 
 -- Indexes
 CREATE INDEX idx_product_reviews_product_id ON public.product_reviews(product_id);

@@ -57,6 +57,11 @@ export default function ProductCard({
   const attributes = sampleDetail?.variant_attributes ?? [];
   const hasVariants = variants.length > 1 && attributes.length > 0;
 
+  const outOfStock =
+    product.status === "out_of_stock" ||
+    variants.length === 0 ||
+    variants.every((v) => !v.is_active || v.stock_quantity <= 0);
+
   const currentSelection = selections[product.id];
   const selectedVariantId =
     currentSelection?.selectedVariantId ?? variants[0]?.id;
@@ -69,6 +74,7 @@ export default function ProductCard({
   function handleQuickAdd(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    if (outOfStock) return;
     if (hasVariants) {
       setPanelOpen((prev) => !prev);
       return;
@@ -129,14 +135,19 @@ export default function ProductCard({
           <Button
             size="lg"
             data-variant-trigger={hasVariants ? product.id : undefined}
+            disabled={outOfStock}
             className={`h-11 w-full rounded-xl text-sm font-semibold shadow-lg ${
-              added
+              outOfStock
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : added
                 ? "bg-foreground text-background hover:bg-foreground"
                 : "bg-gold text-black hover:bg-gold-light"
             }`}
             onClick={handleQuickAdd}
           >
-            {added ? (
+            {outOfStock ? (
+              "Out of Stock"
+            ) : added ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
                 Added
@@ -161,14 +172,19 @@ export default function ProductCard({
         <Button
           size="lg"
           data-variant-trigger={hasVariants ? product.id : undefined}
+          disabled={outOfStock}
           className={`h-11 w-full rounded-xl text-sm font-semibold ${
-            added
+            outOfStock
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : added
               ? "bg-foreground text-background hover:bg-foreground"
               : "bg-gold text-black hover:bg-gold-light"
           }`}
           onClick={handleQuickAdd}
         >
-          {added ? (
+          {outOfStock ? (
+            "Out of Stock"
+          ) : added ? (
             <>
               <Check className="h-4 w-4 mr-2" />
               Added

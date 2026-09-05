@@ -34,12 +34,14 @@ const roleColors: Record<string, string> = {
 export default function CustomerDetailView({ customerId }: { customerId: string }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCustomerById(customerId).then(({ profile: p, orders: o }) => {
+    getCustomerById(customerId).then(({ profile: p, orders: o, email: e }) => {
       setProfile(p as UserProfile);
       setOrders(o as Order[]);
+      setEmail(e);
       setLoading(false);
     });
   }, [customerId]);
@@ -74,8 +76,12 @@ export default function CustomerDetailView({ customerId }: { customerId: string 
       </Link>
 
       <div className="flex items-start gap-4">
-        <div className="w-14 h-14 bg-gold/10 border border-border flex items-center justify-center shrink-0">
-          <span className="text-xl font-medium text-gold">{profile.full_name?.charAt(0)?.toUpperCase() || "?"}</span>
+        <div className="w-14 h-14 bg-gold/10 border border-border flex items-center justify-center shrink-0 overflow-hidden">
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt={profile.full_name || "Avatar"} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xl font-medium text-gold">{profile.full_name?.charAt(0)?.toUpperCase() || "?"}</span>
+          )}
         </div>
         <div>
           <h1 className="font-heading text-2xl font-light">{profile.full_name || "No name"}</h1>
@@ -146,7 +152,7 @@ export default function CustomerDetailView({ customerId }: { customerId: string 
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Email</p>
-                <p className="text-sm">Provided via auth</p>
+                <p className="text-sm">{email || "—"}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Phone</p>
@@ -155,10 +161,6 @@ export default function CustomerDetailView({ customerId }: { customerId: string 
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Joined</p>
                 <p className="text-sm">{formatDate(profile.created_at)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Last Login</p>
-                <p className="text-sm">{formatDate(profile.last_login_at)}</p>
               </div>
             </div>
           </div>
