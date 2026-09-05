@@ -10,6 +10,7 @@ import { useCartStore } from "@/stores/cart";
 import { useWishlistStore } from "@/stores/wishlist";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-NG", {
@@ -185,7 +186,7 @@ export default function ProfileView() {
         .eq("id", userId);
 
       if (profileError) {
-        console.error("Profile update error:", profileError.message);
+        logger.error("Profile update error", { message: profileError.message });
       }
 
       setProfile({ ...profile, full_name: fullName, phone: phone || null });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/resend";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("send-welcome error:", err);
+    logger.error("send-welcome error", { error: String(err) });
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

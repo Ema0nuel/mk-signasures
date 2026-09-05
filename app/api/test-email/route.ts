@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       `,
     });
 
-    const result = await new Promise<{ success: boolean; data?: any; error?: any }>((resolve) => {
+    const result = await new Promise<{ success: boolean; data?: Record<string, unknown>; error?: Record<string, unknown> }>((resolve) => {
       const options: https.RequestOptions = {
         hostname: "api.resend.com",
         port: 443,
@@ -83,13 +83,12 @@ export async function POST(request: Request) {
     });
 
     if (!result.success) {
-      console.error("Resend error:", result.error);
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data: result.data });
-  } catch (err) {
-    console.error("Test email failed:", err);
+  } catch {
+    return NextResponse.json(
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -182,7 +182,7 @@ export function useCartItems() {
                       );
                       if (!testOpt) return true;
                       return v.product_variant_selections?.some(
-                        (s: any) => s.variant_option_id === testOpt.id
+                        (s: ProductVariantSelection) => s.variant_option_id === testOpt.id
                       );
                     });
                   });

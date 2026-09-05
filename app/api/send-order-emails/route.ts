@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderConfirmation, sendAdminNotification } from "@/lib/resend";
+import { logger } from "@/lib/logger";
+import type { OrderItem } from "@/types/database";
 
 export async function POST(request: Request) {
   try {
@@ -101,7 +103,7 @@ export async function POST(request: Request) {
 
     const orderData = {
       orderNumber: order.order_number,
-      items: (order.order_items || []).map((item: any) => ({
+      items: (order.order_items || []).map((item: OrderItem) => ({
         product_name: item.product_name,
         variant_name: item.variant_name,
         sku: item.sku,
@@ -140,7 +142,7 @@ export async function POST(request: Request) {
       orderNumber: order.order_number,
     });
   } catch (err) {
-    console.error("send-order-emails error:", err);
+    logger.error("send-order-emails error", { error: String(err) });
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

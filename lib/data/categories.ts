@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 import type { Category } from "@/types/database";
 
 export async function getCategories(): Promise<Category[]> {
@@ -11,7 +12,7 @@ export async function getCategories(): Promise<Category[]> {
       .order("sort_order");
 
     if (error) {
-      console.error("Failed to fetch categories:", error.message);
+      logger.error("Failed to fetch categories", { message: error.message });
       return [];
     }
 

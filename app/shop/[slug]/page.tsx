@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getProductBySlug, getRelatedProducts } from "@/lib/data/products";
+import type { ProductReview } from "@/types/database";
 import ProductDetailClient from "./product-detail-client";
 
 export async function generateMetadata({
@@ -70,7 +71,7 @@ export default async function ProductDetailPage({
 
   const avgRating =
     product.product_reviews?.length
-      ? product.product_reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+      ? product.product_reviews.reduce((sum: number, r: ProductReview) => sum + r.rating, 0) /
         product.product_reviews.length
       : null;
 

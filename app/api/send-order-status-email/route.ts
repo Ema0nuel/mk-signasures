@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { sendOrderStatusUpdate } from "@/lib/resend";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("send-order-status-email error:", err);
+    logger.error("send-order-status-email error", { error: String(err) });
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

@@ -437,50 +437,6 @@ export async function updateProduct(
 // Product Images
 // ============================================================
 
-export async function uploadProductImage(
-  productId: string,
-  storagePath: string,
-  originalUrl: string,
-  altText?: string,
-  isPrimary?: boolean
-) {
-  const supabase = getAdminClient();
-
-  // Get current max sort_order
-  const { data: existing } = await supabase
-    .from("product_images")
-    .select("sort_order")
-    .eq("product_id", productId)
-    .order("sort_order", { ascending: false })
-    .limit(1);
-
-  const nextSort = existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
-
-  // If this is the first image, make it primary
-  const { count } = await supabase
-    .from("product_images")
-    .select("id", { count: "exact", head: true })
-    .eq("product_id", productId);
-
-  const shouldBePrimary = count === 0 || isPrimary;
-
-  const { data, error } = await supabase
-    .from("product_images")
-    .insert({
-      product_id: productId,
-      storage_path: storagePath,
-      original_url: originalUrl,
-      alt_text: altText || null,
-      sort_order: nextSort,
-      is_primary: shouldBePrimary,
-      processing_status: "pending",
-    })
-    .select()
-    .single();
-
-  return { data, error: error?.message ?? null };
-}
-
 export async function deleteProductImage(imageId: string, storagePath: string) {
   const supabase = getAdminClient();
 

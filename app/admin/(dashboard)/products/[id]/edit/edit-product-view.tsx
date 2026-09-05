@@ -32,7 +32,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   getProductById,
   updateProduct,
-  uploadProductImage,
   uploadProductImageFile,
   deleteProductImage,
   setPrimaryImage,
@@ -48,6 +47,7 @@ import {
   getProductVariantById,
 } from "@/app/admin/actions/data";
 import type { Category } from "@/types/database";
+import { compressImage } from "@/lib/image-compress";
 
 function slugify(text: string) {
   return text
@@ -294,15 +294,17 @@ export default function EditProductView({ productId }: { productId: string }) {
         continue;
       }
 
-      // Convert to base64
-      const arrayBuffer = await file.arrayBuffer();
+      // Compress before upload (Canvas API, no dependencies)
+      const compressed = await compressImage(file);
+
+      const arrayBuffer = await compressed.blob.arrayBuffer();
       const base64 = Buffer.from(arrayBuffer).toString("base64");
 
       const { data: imageData, error: insertError } = await uploadProductImageFile(
         productId,
         base64,
-        file.name,
-        file.type,
+        compressed.fileName,
+        compressed.mimeType,
         file.name.replace(/\.[^.]+$/, ""),
         false
       );

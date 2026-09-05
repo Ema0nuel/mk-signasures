@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 import type { ProductWithCategory, ProductDetail } from "@/types/database";
 
+/** Fetch featured products. Alias getRecommendedProducts to this. */
 export async function getFeaturedProducts(): Promise<ProductWithCategory[]> {
   try {
     const supabase = await createClient();
@@ -13,7 +15,7 @@ export async function getFeaturedProducts(): Promise<ProductWithCategory[]> {
       .limit(8);
 
     if (error) {
-      console.error("Failed to fetch featured products:", error.message);
+      logger.error("Failed to fetch featured products", { message: error.message });
       return [];
     }
 
@@ -22,6 +24,9 @@ export async function getFeaturedProducts(): Promise<ProductWithCategory[]> {
     return [];
   }
 }
+
+/** Recommended products are identical to featured — reuse the same query. */
+export const getRecommendedProducts = getFeaturedProducts;
 
 export async function getNewArrivals(): Promise<ProductWithCategory[]> {
   try {
@@ -34,7 +39,7 @@ export async function getNewArrivals(): Promise<ProductWithCategory[]> {
       .limit(8);
 
     if (error) {
-      console.error("Failed to fetch new arrivals:", error.message);
+      logger.error("Failed to fetch new arrivals", { message: error.message });
       return [];
     }
 
@@ -55,29 +60,7 @@ export async function getTrendingProducts(): Promise<ProductWithCategory[]> {
       .limit(8);
 
     if (error) {
-      console.error("Failed to fetch trending products:", error.message);
-      return [];
-    }
-
-    return (data ?? []) as unknown as ProductWithCategory[];
-  } catch {
-    return [];
-  }
-}
-
-export async function getRecommendedProducts(): Promise<ProductWithCategory[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select("*, categories(*), product_images(*)")
-      .eq("status", "active")
-      .eq("is_featured", true)
-      .order("created_at", { ascending: false })
-      .limit(8);
-
-    if (error) {
-      console.error("Failed to fetch recommended products:", error.message);
+      logger.error("Failed to fetch trending products", { message: error.message });
       return [];
     }
 
@@ -101,7 +84,7 @@ export async function getProductsByCategory(
       .limit(20);
 
     if (error) {
-      console.error("Failed to fetch products by category:", error.message);
+      logger.error("Failed to fetch products by category", { message: error.message });
       return [];
     }
 
@@ -135,7 +118,7 @@ export async function searchProducts(
       .limit(20);
 
     if (e1 && e2) {
-      console.error("Failed to search products:", e1.message, e2.message);
+      logger.error("Failed to search products", { e1: e1.message, e2: e2.message });
       return [];
     }
 
@@ -182,7 +165,7 @@ export async function getProductBySlug(
       .maybeSingle();
 
     if (error) {
-      console.error("Failed to fetch product:", error.message);
+      logger.error("Failed to fetch product", { message: error.message });
       return null;
     }
 

@@ -44,9 +44,23 @@ PRODUCT.md
 .codex/
 migration/
 .impeccable/**
+skills-lock.json
+components.json
 
 # supabase local
 supabase/.temp/
+supabase/config.toml
+
+# dead edge functions (not wired up, not needed in production)
+supabase/functions/sync-cart/
+
+# dev-only routes (gated with NODE_ENV check)
+app/test-email/
+app/api/test-email/
+app/api/admin-setup/
+
+# google verification (one-time)
+public/google*.html
 
 # vercel
 .vercel

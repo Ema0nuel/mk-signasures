@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -21,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json({ addresses: data || [] });
   } catch (err) {
-    console.error("Fetch addresses error:", err);
+    logger.error("Fetch addresses error", { error: String(err) });
     return NextResponse.json({ addresses: [] });
   }
 }
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ address: data });
   } catch (err) {
-    console.error("Save address error:", err);
+    logger.error("Save address error", { error: String(err) });
     return NextResponse.json(
       { error: "Failed to save address" },
       { status: 500 }
@@ -110,7 +111,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Delete address error:", err);
+    logger.error("Delete address error", { error: String(err) });
     return NextResponse.json(
       { error: "Failed to delete address" },
       { status: 500 }

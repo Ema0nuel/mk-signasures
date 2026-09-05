@@ -1,5 +1,6 @@
 import https from "https";
 import { welcomeEmailTemplate, orderConfirmationTemplate, adminNotificationTemplate, orderStatusUpdateTemplate } from "./email-templates";
+import { logger } from "./logger";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
@@ -14,7 +15,13 @@ interface SendEmailParams {
   html: string;
 }
 
-function sendEmail({ from, to, subject, html }: SendEmailParams): Promise<{ success: boolean; data?: any; error?: any }> {
+interface SendEmailResult {
+  success: boolean;
+  data?: Record<string, unknown>;
+  error?: Record<string, unknown>;
+}
+
+function sendEmail({ from, to, subject, html }: SendEmailParams): Promise<SendEmailResult> {
   return new Promise((resolve) => {
     const body = JSON.stringify({ from, to, subject, html });
     const options: https.RequestOptions = {
@@ -39,7 +46,7 @@ function sendEmail({ from, to, subject, html }: SendEmailParams): Promise<{ succ
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
             resolve({ success: true, data: parsed });
           } else {
-            console.error("Resend API error:", parsed);
+            logger.error("Resend API error", parsed);
             resolve({ success: false, error: parsed });
           }
         } catch {
@@ -49,7 +56,7 @@ function sendEmail({ from, to, subject, html }: SendEmailParams): Promise<{ succ
     });
 
     req.on("error", (err) => {
-      console.error("Resend request error:", err.message);
+      logger.error("Resend request error", { message: err.message });
       resolve({ success: false, error: { message: err.message } });
     });
 
@@ -72,7 +79,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
   });
 
   if (!result.success) {
-    console.error("Failed to send welcome email:", result.error);
+    logger.error("Failed to send welcome email", result.error);
   }
 
   return result;
@@ -115,7 +122,7 @@ export async function sendOrderConfirmation(
   });
 
   if (!result.success) {
-    console.error("Failed to send order confirmation:", result.error);
+    logger.error("Failed to send order confirmation", result.error);
   }
 
   return result;
@@ -130,7 +137,7 @@ export async function sendAdminNotification(order: OrderEmailData & { customerEm
   });
 
   if (!result.success) {
-    console.error("Failed to send admin notification:", result.error);
+    logger.error("Failed to send admin notification", result.error);
   }
 
   return result;
@@ -150,7 +157,7 @@ export async function sendOrderStatusUpdate(
   });
 
   if (!result.success) {
-    console.error("Failed to send order status update:", result.error);
+    logger.error("Failed to send order status update", result.error);
   }
 
   return result;

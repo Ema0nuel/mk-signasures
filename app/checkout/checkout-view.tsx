@@ -21,18 +21,13 @@ import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cart";
 import { useCartItems } from "@/hooks/use-cart-items";
 import { createClient } from "@/lib/supabase/client";
+import {
+  LAGOS_FEE,
+  INTERSTATE_FEE,
+  FREE_DELIVERY_THRESHOLD,
+  formatPrice,
+} from "@/lib/constants";
 import { toast } from "sonner";
-
-const LAGOS_FEE = 5000;
-const INTERSTATE_FEE = 10000;
-const FREE_DELIVERY_THRESHOLD = 100000;
-
-const formatPrice = (amount: number) =>
-  new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    maximumFractionDigits: 0,
-  }).format(amount);
 
 interface SavedAddress {
   id: string;

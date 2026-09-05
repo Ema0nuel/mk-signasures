@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       .update({ processing_status: "processing" })
       .eq("id", record.id);
 
-    // 2. Download compressed image from Storage
+    // 2. Download image from Storage
     const { data: fileData, error: dlError } = await supabase.storage
       .from("product-images")
       .download(record.storage_path);
@@ -89,15 +89,16 @@ Deno.serve(async (req) => {
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
-    console.error("Image optimization failed:", error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Image optimization failed:", message);
 
     await supabase
       .from("product_images")
       .update({ processing_status: "failed" })
       .eq("id", record.id);
 
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
