@@ -1,0 +1,27 @@
+export * from "./database";
+
+// Re-export commonly used types at the top level
+export type {
+  Product,
+  ProductWithCategory,
+  ProductDetail,
+  Cart,
+  CartItem,
+  CartItemExpanded,
+  Order,
+  OrderItem,
+  OrderWithItems,
+  UserProfile,
+  UserAddress,
+  Category,
+  ProductVariant,
+  ProductImage,
+  UserRole,
+  OrderStatus,
+  PaymentStatus,
+  ShippingAddress,
+  ProcessOrderRequest,
+  ProcessOrderResponse,
+  SyncCartRequest,
+  SyncCartResponse,
+} from "./database";
