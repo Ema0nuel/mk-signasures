@@ -4,14 +4,14 @@ import { Phone, Mail, MessageCircle, MapPin } from "lucide-react";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with MK Signatures. Reach us via phone, email, or WhatsApp.",
+    "Get in touch with MK Signasures. Reach us via phone, email, or WhatsApp.",
   openGraph: {
-    title: "Contact Us | MK Signatures",
+    title: "Contact Us | MK Signasures",
     description: "Reach us via phone, email, or WhatsApp.",
-    url: "https://mksignatures.com/contact",
+    url: "https://mksignasures.shop/contact",
   },
   alternates: {
-    canonical: "https://mksignatures.com/contact",
+    canonical: "https://mksignasures.shop/contact",
   },
 };
 
@@ -33,7 +33,7 @@ export default function ContactPage() {
         {/* Contact Cards */}
         <div className="grid gap-6 sm:grid-cols-3">
           <a
-            href="https://wa.me/2348101510096?text=Hello%20MK%20Signatures"
+            href="https://wa.me/2348101510096?text=Hello%20MK%20Signasures"
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-col items-center gap-3 border border-border p-6 text-center transition-colors duration-150 hover:border-gold/40"
@@ -83,7 +83,7 @@ export default function ContactPage() {
                 Visit Our Store
               </h2>
               <p className="text-sm font-medium text-foreground">
-                MK Signatures Store
+                MK Signasures Store
               </p>
               <p className="text-sm text-muted-foreground">
                 Jakande, Oke-Afa,

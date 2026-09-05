@@ -2,8 +2,17 @@ import type { Metadata } from "next";
 import WishlistView from "./wishlist-view";
 
 export const metadata: Metadata = {
-  title: "Wishlist | MK Signasures",
-  description: "Your saved products and favorites.",
+  title: "Wishlist",
+  description: "Your saved products and favorites at MK Signasures.",
+  openGraph: {
+    title: "Wishlist | MK Signasures",
+    description: "Your saved products and favorites.",
+    url: "https://mksignasures.shop/wishlist",
+  },
+  alternates: {
+    canonical: "https://mksignasures.shop/wishlist",
+  },
+  robots: { index: false, follow: false },
 };
 
 export default function WishlistPage() {

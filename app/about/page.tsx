@@ -4,14 +4,14 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Learn about MK Signatures, our mission, and our commitment to quality wigs, hair, and clothing.",
+    "Learn about MK Signasures, our mission, and our commitment to quality wigs, hair, and clothing.",
   openGraph: {
-    title: "About | MK Signatures",
+    title: "About | MK Signasures",
     description: "Our story, mission, and commitment to quality.",
-    url: "https://mksignatures.com/about",
+    url: "https://mksignasures.shop/about",
   },
   alternates: {
-    canonical: "https://mksignatures.com/about",
+    canonical: "https://mksignasures.shop/about",
   },
 };
 
@@ -22,7 +22,7 @@ export default function AboutPage() {
       <div className="relative h-64 sm:h-80 md:h-96 w-full overflow-hidden">
         <Image
           src="/banner/about.webp"
-          alt="About MK Signatures"
+          alt="About MK Signasures"
           fill
           className="object-cover"
           sizes="100vw"
@@ -31,7 +31,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-light text-white text-center px-4">
-            About MK Signatures
+            About MK Signasures
           </h1>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function AboutPage() {
         <section className="space-y-4">
           <h2 className="font-heading text-2xl font-light">Our Story</h2>
           <p className="text-muted-foreground leading-relaxed">
-            MK Signatures was born from a simple idea: everyone deserves access to
+            MK Signasures was born from a simple idea: everyone deserves access to
             quality wigs, hair extensions, and clothing without compromise. We
             started with a passion for helping people look and feel their best,
             and that mission drives every product we curate.
@@ -70,7 +70,7 @@ export default function AboutPage() {
         <section className="space-y-4">
           <h2 className="font-heading text-2xl font-light">Visit Us</h2>
           <div className="text-muted-foreground leading-relaxed space-y-1">
-            <p className="font-medium text-foreground">MK Signatures Store</p>
+            <p className="font-medium text-foreground">MK Signasures Store</p>
             <p>Jakande, Oke-Afa,</p>
             <p>Isolo, Lagos, Nigeria</p>
             <p className="text-sm">P.O. Box 10131, Ikeja, Lagos State, Nigeria</p>

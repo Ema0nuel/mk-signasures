@@ -15,7 +15,7 @@ export default function BrandStory() {
             Effortless Style, Lasting Quality
           </h2>
           <p className="mt-5 max-w-prose text-sm leading-relaxed text-muted-foreground sm:text-base">
-            MK Signatures was built for anyone who wants luxury without the
+            MK Signasures was built for anyone who wants luxury without the
             markup. We source the finest wigs, hair, and clothing so you look
             and feel your best, every single day.
           </p>
@@ -36,7 +36,7 @@ export default function BrandStory() {
         <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-background">
           <Image
             src="/banner/our_story.webp"
-            alt="MK Signatures story"
+            alt="MK Signasures story"
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"

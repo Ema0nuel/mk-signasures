@@ -68,6 +68,9 @@ export const metadata: Metadata = {
       { url: "/images/logo-192.png", sizes: "192x192", type: "image/png" },
     ],
   },
+  verification: {
+    google: "-8gzpKE_2bVk5-cgTdkrVHwodqpKg2rJN5jYdbCtyI4",
+  },
   alternates: {
     canonical: "https://mksignasures.shop",
   },

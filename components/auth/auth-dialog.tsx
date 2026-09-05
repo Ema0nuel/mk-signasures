@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import {
@@ -16,7 +16,7 @@ import { useAuthDialog } from "@/components/auth-dialog-provider";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-type AuthView = "signin" | "signup" | "forgot" | "reset";
+type AuthView = "signin" | "signup" | "forgot";
 
 function PasswordInput({
   value,
@@ -84,23 +84,6 @@ export default function AuthDialog() {
   const [forgotError, setForgotError] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
 
-  // ── Reset Password state ──
-  const [resetPassword, setResetPassword] = useState("");
-  const [resetConfirm, setResetConfirm] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState("");
-  const [resetSuccess, setResetSuccess] = useState(false);
-  const [resetSession, setResetSession] = useState(false);
-
-  // On mount, check if URL hash contains Supabase reset tokens
-  useEffect(() => {
-    if (!isOpen) return;
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery") && hash.includes("access_token")) {
-      setView("reset");
-      setResetSession(true);
-    }
-  }, [isOpen]);
 
   // ── Handlers ──
 
@@ -188,7 +171,7 @@ export default function AuthDialog() {
 
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
     });
 
     if (error) {
@@ -201,55 +184,14 @@ export default function AuthDialog() {
     setForgotLoading(false);
   }
 
-  async function handleResetPassword(e: React.FormEvent) {
-    e.preventDefault();
-    setResetError("");
-
-    if (resetPassword !== resetConfirm) {
-      setResetError("Passwords do not match");
-      return;
-    }
-
-    if (resetPassword.length < 6) {
-      setResetError("Password must be at least 6 characters");
-      return;
-    }
-
-    setResetLoading(true);
-
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({
-      password: resetPassword,
-    });
-
-    if (error) {
-      setResetError(error.message);
-      setResetLoading(false);
-      return;
-    }
-
-    setResetSuccess(true);
-    setResetLoading(false);
-    toast.success("Password updated successfully");
-
-    // Clear URL hash tokens
-    window.history.replaceState(null, "", window.location.pathname);
-  }
-
   function handleOpenChange(open: boolean) {
     if (!open) {
-      // Reset all view state on close
       setView("signin");
       setSignInError("");
       setSignUpError("");
       setForgotError("");
       setForgotSent(false);
       setForgotEmail("");
-      setResetError("");
-      setResetSuccess(false);
-      setResetSession(false);
-      setResetPassword("");
-      setResetConfirm("");
       close();
     }
   }
@@ -259,77 +201,6 @@ export default function AuthDialog() {
     setForgotError("");
     setForgotSent(false);
     setForgotEmail("");
-    setResetError("");
-    setResetSuccess(false);
-    setResetPassword("");
-    setResetConfirm("");
-  }
-
-  // ── Reset Password View ──
-  if (view === "reset") {
-    return (
-      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-0">
-            <DialogTitle className="font-heading text-2xl font-light text-center">
-              New Password
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="px-6 py-4">
-            {resetSuccess ? (
-              <div className="text-center py-4 space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Your password has been updated. You can now sign in with your new password.
-                </p>
-                <Button
-                  className="w-full h-11 bg-primary text-primary-foreground"
-                  onClick={() => {
-                    setView("signin");
-                    setResetSuccess(false);
-                  }}
-                >
-                  Sign In
-                </Button>
-              </div>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Enter your new password below.
-                </p>
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  <PasswordInput
-                    value={resetPassword}
-                    onChange={setResetPassword}
-                    placeholder="New password"
-                    required
-                  />
-                  <PasswordInput
-                    value={resetConfirm}
-                    onChange={setResetConfirm}
-                    placeholder="Confirm new password"
-                    required
-                  />
-
-                  {resetError && (
-                    <p className="text-sm text-destructive">{resetError}</p>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11 bg-primary text-primary-foreground"
-                    disabled={resetLoading}
-                  >
-                    {resetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Update Password
-                  </Button>
-                </form>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
   }
 
   // ── Forgot Password View ──

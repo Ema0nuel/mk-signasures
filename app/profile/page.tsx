@@ -3,15 +3,16 @@ import ProfileView from "./profile-view";
 
 export const metadata: Metadata = {
   title: "Profile",
-  description: "Manage your MK Signatures account settings.",
+  description: "Manage your MK Signasures account settings.",
   openGraph: {
-    title: "Profile | MK Signatures",
+    title: "Profile | MK Signasures",
     description: "Manage your account settings.",
-    url: "https://mksignatures.com/profile",
+    url: "https://mksignasures.shop/profile",
   },
   alternates: {
-    canonical: "https://mksignatures.com/profile",
+    canonical: "https://mksignasures.shop/profile",
   },
+  robots: { index: false, follow: false },
 };
 
 export default function ProfilePage() {

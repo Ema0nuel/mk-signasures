@@ -1,26 +1,81 @@
-import { Resend } from "resend";
-import { welcomeEmailTemplate, orderConfirmationTemplate, adminNotificationTemplate } from "./email-templates";
+import https from "https";
+import { welcomeEmailTemplate, orderConfirmationTemplate, adminNotificationTemplate, orderStatusUpdateTemplate } from "./email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-const CUSTOMER_FROM_EMAIL = "MK Signasures <no-reply@mksignatures.shop>";
-const ADMIN_FROM_EMAIL = "MK Signasures <customer@mksignatures.shop>";
+const CUSTOMER_FROM_EMAIL = "MK Signasures <no-reply@mksignasures.shop>";
+const ADMIN_FROM_EMAIL = "MK Signasures <customer@mksignasures.shop>";
 const ADMIN_EMAIL = "admin@mksignasures.shop";
 
+interface SendEmailParams {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+}
+
+function sendEmail({ from, to, subject, html }: SendEmailParams): Promise<{ success: boolean; data?: any; error?: any }> {
+  return new Promise((resolve) => {
+    const body = JSON.stringify({ from, to, subject, html });
+    const options: https.RequestOptions = {
+      hostname: "api.resend.com",
+      port: 443,
+      path: "/emails",
+      method: "POST",
+      family: 4,
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve({ success: true, data: parsed });
+          } else {
+            console.error("Resend API error:", parsed);
+            resolve({ success: false, error: parsed });
+          }
+        } catch {
+          resolve({ success: false, error: { message: "Failed to parse Resend response" } });
+        }
+      });
+    });
+
+    req.on("error", (err) => {
+      console.error("Resend request error:", err.message);
+      resolve({ success: false, error: { message: err.message } });
+    });
+
+    req.on("timeout", () => {
+      req.destroy();
+      resolve({ success: false, error: { message: "Request timed out" } });
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
 export async function sendWelcomeEmail(email: string, name: string) {
-  const { data, error } = await resend.emails.send({
+  const result = await sendEmail({
     from: CUSTOMER_FROM_EMAIL,
     to: email,
     subject: "Welcome to MK Signasures",
     html: welcomeEmailTemplate(name),
   });
 
-  if (error) {
-    console.error("Failed to send welcome email:", error);
-    return { success: false, error };
+  if (!result.success) {
+    console.error("Failed to send welcome email:", result.error);
   }
 
-  return { success: true, data };
+  return result;
 }
 
 interface OrderEmailData {
@@ -52,33 +107,51 @@ export async function sendOrderConfirmation(
   name: string,
   order: OrderEmailData
 ) {
-  const { data, error } = await resend.emails.send({
+  const result = await sendEmail({
     from: CUSTOMER_FROM_EMAIL,
     to: email,
     subject: `Order Confirmed - ${order.orderNumber}`,
     html: orderConfirmationTemplate(name, order),
   });
 
-  if (error) {
-    console.error("Failed to send order confirmation:", error);
-    return { success: false, error };
+  if (!result.success) {
+    console.error("Failed to send order confirmation:", result.error);
   }
 
-  return { success: true, data };
+  return result;
 }
 
 export async function sendAdminNotification(order: OrderEmailData & { customerEmail: string }) {
-  const { data, error } = await resend.emails.send({
+  const result = await sendEmail({
     from: ADMIN_FROM_EMAIL,
     to: ADMIN_EMAIL,
     subject: `New Order - ${order.orderNumber}`,
     html: adminNotificationTemplate(order),
   });
 
-  if (error) {
-    console.error("Failed to send admin notification:", error);
-    return { success: false, error };
+  if (!result.success) {
+    console.error("Failed to send admin notification:", result.error);
   }
 
-  return { success: true, data };
+  return result;
+}
+
+export async function sendOrderStatusUpdate(
+  email: string,
+  name: string,
+  orderNumber: string,
+  newStatus: string
+) {
+  const result = await sendEmail({
+    from: CUSTOMER_FROM_EMAIL,
+    to: email,
+    subject: `Order ${orderNumber} - ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
+    html: orderStatusUpdateTemplate(name, orderNumber, newStatus),
+  });
+
+  if (!result.success) {
+    console.error("Failed to send order status update:", result.error);
+  }
+
+  return result;
 }

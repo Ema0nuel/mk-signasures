@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/checkout/", "/api/"],
+        disallow: ["/admin/", "/checkout/", "/api/", "/auth/", "/test-email"],
       },
     ],
     sitemap: "https://mksignasures.shop/sitemap.xml",

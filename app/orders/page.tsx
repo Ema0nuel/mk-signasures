@@ -6,15 +6,16 @@ import type { OrderWithItems } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Orders",
-  description: "View your MK Signatures order history.",
+  description: "View your MK Signasures order history.",
   openGraph: {
-    title: "Orders | MK Signatures",
+    title: "Orders | MK Signasures",
     description: "View your order history.",
-    url: "https://mksignatures.com/orders",
+    url: "https://mksignasures.shop/orders",
   },
   alternates: {
-    canonical: "https://mksignatures.com/orders",
+    canonical: "https://mksignasures.shop/orders",
   },
+  robots: { index: false, follow: false },
 };
 
 export default async function OrdersPage() {

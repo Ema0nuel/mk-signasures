@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/resend";
 
 export async function POST(request: Request) {
   try {
-    const { email, name } = await request.json();
+    // Verify caller is authenticated
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    console.log("send-welcome called:", { email, name });
+    if (!user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const { email, name } = await request.json();
 
     if (!email || !name) {
       return NextResponse.json(
@@ -15,8 +27,6 @@ export async function POST(request: Request) {
     }
 
     const result = await sendWelcomeEmail(email, name);
-
-    console.log("Welcome email result:", result);
 
     if (!result.success) {
       return NextResponse.json(

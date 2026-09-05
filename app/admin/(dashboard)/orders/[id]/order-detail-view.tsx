@@ -135,6 +135,13 @@ export default function OrderDetailView({ orderId }: { orderId: string }) {
     );
     toast.success(`Order updated to ${newStatus}`);
     setUpdating(false);
+
+    // Send tracking email to customer (fire and forget)
+    fetch("/api/send-order-status-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId: order.id, newStatus }),
+    }).catch(() => {});
   }
 
   async function handleUpdatePaymentStatus(newPaymentStatus: string) {

@@ -6,15 +6,16 @@ import type { UserAddress } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Addresses",
-  description: "Manage your MK Signatures delivery addresses.",
+  description: "Manage your MK Signasures delivery addresses.",
   openGraph: {
-    title: "Addresses | MK Signatures",
+    title: "Addresses | MK Signasures",
     description: "Manage your delivery addresses.",
-    url: "https://mksignatures.com/addresses",
+    url: "https://mksignasures.shop/addresses",
   },
   alternates: {
-    canonical: "https://mksignatures.com/addresses",
+    canonical: "https://mksignasures.shop/addresses",
   },
+  robots: { index: false, follow: false },
 };
 
 export default async function AddressesPage() {

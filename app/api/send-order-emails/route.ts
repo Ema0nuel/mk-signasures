@@ -14,6 +14,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verify payment with Paystack before confirming order
+    let paymentVerified = false;
+    try {
+      const psRes = await fetch(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          },
+        }
+      );
+      const psData = await psRes.json();
+      paymentVerified = psData.status === true && psData.data?.status === "success";
+    } catch {
+      // If Paystack is unreachable, still try to process (webhook will handle it)
+    }
+
+    if (!paymentVerified) {
+      return NextResponse.json(
+        { error: "Payment not verified. Please wait for the webhook to process." },
+        { status: 400 }
+      );
+    }
+
     const supabase = await createClient();
 
     // Fetch order with items
@@ -24,7 +48,6 @@ export async function POST(request: Request) {
       .single();
 
     if (orderError || !order) {
-      console.error("Order not found for reference:", reference);
       return NextResponse.json(
         { error: "Order not found" },
         { status: 404 }
@@ -36,7 +59,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, orderNumber: order.order_number, alreadySent: true });
     }
 
-    // If order is still pending, confirm it now (webhook may not have fired yet)
+    // Confirm the order if still pending
     if (order.payment_status === "pending") {
       await supabase
         .from("orders")
@@ -69,26 +92,7 @@ export async function POST(request: Request) {
       customerEmail = userData?.user?.email || "";
     }
 
-    // Fallback: fetch email from Paystack transaction
-    if (!customerEmail && order.paystack_reference) {
-      try {
-        const psRes = await fetch(
-          `https://api.paystack.co/transaction/verify/${order.paystack_reference}`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-            },
-          }
-        );
-        const psData = await psRes.json();
-        if (psData.status && psData.data?.customer?.email) {
-          customerEmail = psData.data.customer.email;
-        }
-      } catch {}
-    }
-
     if (!customerEmail) {
-      console.error("No customer email found for order:", order.id);
       return NextResponse.json(
         { error: "Customer email not found" },
         { status: 400 }
@@ -124,11 +128,6 @@ export async function POST(request: Request) {
       sendOrderConfirmation(customerEmail, order.shipping_name, orderData),
       sendAdminNotification({ ...orderData, customerEmail }),
     ]);
-
-    console.log("Email results:", {
-      customer: customerResult,
-      admin: adminResult,
-    });
 
     // Mark emails as sent
     await supabase

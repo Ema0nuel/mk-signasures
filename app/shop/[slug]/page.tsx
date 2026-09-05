@@ -64,8 +64,50 @@ export default async function ProductDetailPage({
     product.id
   );
 
+  const imageUrl =
+    product.product_images?.[0]?.optimized_url ||
+    product.product_images?.[0]?.original_url;
+
+  const avgRating =
+    product.product_reviews?.length
+      ? product.product_reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+        product.product_reviews.length
+      : null;
+
   return (
     <div className="min-h-screen">
+      {/* Product structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            description: product.meta_description || product.short_description || product.description,
+            image: imageUrl ? [imageUrl] : [],
+            brand: { "@type": "Brand", name: "MK Signasures" },
+            url: `https://mksignasures.shop/shop/${product.slug}`,
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "NGN",
+              price: product.base_price,
+              availability: product.status === "active" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              url: `https://mksignasures.shop/shop/${product.slug}`,
+            },
+            ...(avgRating && product.product_reviews?.length
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: Math.round(avgRating * 10) / 10,
+                    reviewCount: product.product_reviews.length,
+                  },
+                }
+              : {}),
+          }),
+        }}
+      />
+
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <nav className="flex items-center gap-2 text-xs text-muted-foreground">

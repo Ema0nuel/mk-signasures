@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import https from "https";
 
 export async function POST(request: Request) {
+  // Only allow in development
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json(
+      { error: "This endpoint is only available in development" },
+      { status: 403 }
+    );
+  }
+
   try {
     const { to } = await request.json();
 
@@ -14,8 +20,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await resend.emails.send({
-      from: "MK Signasures <no-reply@mksignatures.shop>",
+    const body = JSON.stringify({
+      from: "MK Signasures <no-reply@mksignasures.shop>",
       to,
       subject: "Test Email from MK Signasures",
       html: `
@@ -37,12 +43,51 @@ export async function POST(request: Request) {
       `,
     });
 
-    if (error) {
-      console.error("Resend error:", error);
-      return NextResponse.json({ error }, { status: 500 });
+    const result = await new Promise<{ success: boolean; data?: any; error?: any }>((resolve) => {
+      const options: https.RequestOptions = {
+        hostname: "api.resend.com",
+        port: 443,
+        path: "/emails",
+        method: "POST",
+        family: 4,
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+        },
+      };
+
+      const req = https.request(options, (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+              resolve({ success: true, data: parsed });
+            } else {
+              resolve({ success: false, error: parsed });
+            }
+          } catch {
+            resolve({ success: false, error: { message: "Failed to parse response" } });
+          }
+        });
+      });
+
+      req.on("error", (err) => {
+        resolve({ success: false, error: { message: err.message } });
+      });
+
+      req.write(body);
+      req.end();
+    });
+
+    if (!result.success) {
+      console.error("Resend error:", result.error);
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (err) {
     console.error("Test email failed:", err);
     return NextResponse.json(

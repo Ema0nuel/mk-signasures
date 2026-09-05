@@ -85,7 +85,7 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="font-heading text-xl font-light">Contact Information</h2>
           <div className="text-sm text-muted-foreground leading-relaxed space-y-1">
-            <p className="font-medium text-foreground">MK Signatures Store</p>
+            <p className="font-medium text-foreground">MK Signasures Store</p>
             <p>Jakande, Oke-Afa,</p>
             <p>Isolo, Lagos, Nigeria</p>
             <p className="text-xs text-muted-foreground/60">

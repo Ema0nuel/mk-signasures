@@ -242,6 +242,82 @@ export function orderConfirmationTemplate(
 </html>`;
 }
 
+const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+  confirmed: { bg: "#e3f2fd", text: "#1565c0", label: "Confirmed" },
+  processing: { bg: "#f3e5f5", text: "#7b1fa2", label: "Processing" },
+  shipped: { bg: "#e8eaf6", text: "#283593", label: "Shipped" },
+  delivered: { bg: "#e8f5e9", text: "#2e7d32", label: "Delivered" },
+  cancelled: { bg: "#ffebee", text: "#c62828", label: "Cancelled" },
+  refunded: { bg: "#fff3e0", text: "#e65100", label: "Refunded" },
+};
+
+const statusMessages: Record<string, string> = {
+  confirmed: "Your order has been confirmed and is being prepared.",
+  processing: "We are currently processing your order.",
+  shipped: "Great news! Your order has been shipped and is on its way to you.",
+  delivered: "Your order has been delivered. We hope you love your purchase!",
+  cancelled: "Your order has been cancelled. If you have any questions, please contact us.",
+  refunded: "Your order has been refunded. The funds will appear in your account within 3-5 business days.",
+};
+
+export function orderStatusUpdateTemplate(
+  name: string,
+  orderNumber: string,
+  newStatus: string
+): string {
+  const status = statusColors[newStatus] || { bg: "#f5f5f5", text: "#333333", label: newStatus };
+  const message = statusMessages[newStatus] || `Your order status has been updated to ${newStatus}.`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="${baseStyles}">
+  <div style="padding: 40px 20px;">
+    <div style="${containerStyles}">
+      <div style="${headerStyles}">
+        <h1 style="color: #C9A96E; font-size: 24px; font-weight: 300; letter-spacing: 2px; margin: 0;">MK SIGNASURES</h1>
+        <p style="color: #999999; font-size: 12px; margin: 8px 0 0 0; letter-spacing: 1px;">ORDER UPDATE</p>
+      </div>
+      <div style="${bodyStyles}">
+        <h2 style="font-size: 20px; font-weight: 400; margin: 0 0 8px 0; color: #1a1a1a;">Hi ${name}</h2>
+        <p style="font-size: 15px; color: #555555; margin: 0 0 24px 0;">${message}</p>
+
+        <div style="text-align: center; margin-bottom: 32px;">
+          <div style="display: inline-block; background-color: ${status.bg}; color: ${status.text}; padding: 10px 28px; font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px;">
+            ${status.label}
+          </div>
+        </div>
+
+        <hr style="${dividerStyles}">
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; font-size: 14px; color: #555555;">Order Number</td>
+            <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right;">${orderNumber}</td>
+          </tr>
+        </table>
+
+        <hr style="${dividerStyles}">
+
+        <p style="font-size: 13px; color: #999999; margin: 0 0 8px 0;">
+          You can track your order status from your account dashboard.
+        </p>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="https://mksignasures.shop/orders" style="${goldButtonStyles}">Track Your Order</a>
+        </div>
+      </div>
+      <div style="${footerStyles}">
+        <p style="margin: 0 0 8px 0;">MK Signasures | Premium Wigs, Hair & Clothing</p>
+        <p style="margin: 0;">Questions? Reply to this email or reach us at <a href="mailto:admin@mksignasures.shop" style="color: #C9A96E; text-decoration: none;">admin@mksignasures.shop</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function adminNotificationTemplate(
   order: OrderEmailData & { customerEmail: string }
 ): string {

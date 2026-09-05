@@ -3,14 +3,14 @@ import CheckoutView from "./checkout-view";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Complete your MK Signatures order.",
+  description: "Complete your MK Signasures order.",
   openGraph: {
-    title: "Checkout | MK Signatures",
+    title: "Checkout | MK Signasures",
     description: "Complete your order.",
-    url: "https://mksignatures.com/checkout",
+    url: "https://mksignasures.shop/checkout",
   },
   alternates: {
-    canonical: "https://mksignatures.com/checkout",
+    canonical: "https://mksignasures.shop/checkout",
   },
 };
 
