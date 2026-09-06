@@ -236,7 +236,7 @@ export default function ProductDetailView({ productId }: { productId: string }) 
         <Package className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">Product not found</p>
         <Link
-          href="/products"
+          href="/admin/products"
           className="text-sm text-gold hover:underline mt-2 inline-block"
         >
           Back to products
@@ -268,7 +268,7 @@ export default function ProductDetailView({ productId }: { productId: string }) 
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/products/${productId}/edit`}
+            href={`/admin/products/${productId}/edit`}
             className="inline-flex items-center gap-1.5 h-8 px-3 text-sm border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -554,7 +554,7 @@ export default function ProductDetailView({ productId }: { productId: string }) 
           )}
 
           <Link
-            href={`/products/${productId}/edit`}
+            href={`/admin/products/${productId}/edit`}
             className="flex items-center justify-center gap-1.5 w-full h-9 bg-primary text-primary-foreground text-sm transition-colors"
           >
             <Pencil className="w-3.5 h-3.5" /> Edit Product

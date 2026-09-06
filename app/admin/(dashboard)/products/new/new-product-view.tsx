@@ -502,7 +502,7 @@ export default function NewProductView() {
       <div className="space-y-6 max-w-4xl">
         <div className="flex items-center justify-between">
           <Link
-            href="/products"
+            href="/admin/products"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Products

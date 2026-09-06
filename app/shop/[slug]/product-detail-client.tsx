@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
-import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw, X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw, X, ChevronLeft, ChevronRight, ZoomIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import WishlistButton from "@/components/product/wishlist-button";
@@ -51,6 +51,12 @@ export default function ProductDetailClient({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [descExpanded, setDescExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  // Show spinner when switching images
+  useEffect(() => {
+    setImageLoading(true);
+  }, [activeImageIndex]);
 
   const addItem = useCartStore((s) => s.addItem);
   const { open: openCart } = useCartDrawer();
@@ -149,17 +155,25 @@ export default function ProductDetailClient({
               onClick={() => setLightboxOpen(true)}
             >
               {displayImages.length > 0 ? (
-                <ImageWithFallback
-                  src={
-                    displayImages[activeImageIndex]?.optimized_url ||
-                    displayImages[activeImageIndex]?.original_url
-                  }
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
+                <>
+                  <ImageWithFallback
+                    src={
+                      displayImages[activeImageIndex]?.optimized_url ||
+                      displayImages[activeImageIndex]?.original_url
+                    }
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                    onLoad={() => setImageLoading(false)}
+                  />
+                  {imageLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 z-10">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   No image available
@@ -473,7 +487,13 @@ export default function ProductDetailClient({
               fill
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 80vw"
+              onLoad={() => setImageLoading(false)}
             />
+            {imageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-white/70" />
+              </div>
+            )}
           </div>
 
           {/* Next */}

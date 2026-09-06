@@ -200,7 +200,7 @@ export default function EditProductView({ productId }: { productId: string }) {
 
     if (!productResult.product) {
       toast.error("Product not found");
-      router.push("/products");
+      router.push("/admin/products");
       return;
     }
 
@@ -270,7 +270,7 @@ export default function EditProductView({ productId }: { productId: string }) {
 
     toast.success("Product updated");
     setSaving(false);
-    router.push("/products");
+    router.push("/admin/products");
   }
 
   // ============================================================

@@ -60,7 +60,7 @@ export default function CustomerDetailView({ customerId }: { customerId: string 
       <div className="text-center py-12">
         <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">Customer not found</p>
-        <Link href="/customers" className="text-sm text-gold hover:underline mt-2 inline-block">Back to customers</Link>
+        <Link href="/admin/customers" className="text-sm text-gold hover:underline mt-2 inline-block">Back to customers</Link>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function CustomerDetailView({ customerId }: { customerId: string 
 
   return (
     <div className="space-y-6">
-      <Link href="/customers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/admin/customers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Customers
       </Link>
 

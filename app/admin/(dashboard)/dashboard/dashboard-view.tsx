@@ -139,7 +139,7 @@ export default function DashboardView() {
               <Clock className="w-4 h-4 text-muted-foreground" />
               Recent Orders
             </h2>
-            <Link href="/orders" className="text-xs text-gold hover:underline">View all</Link>
+            <Link href="/admin/orders" className="text-xs text-gold hover:underline">View all</Link>
           </div>
           <div className="divide-y divide-border">
             {stats.recentOrders.length === 0 ? (
@@ -199,7 +199,7 @@ export default function DashboardView() {
             <Box className="w-4 h-4 text-muted-foreground" />
             Inventory
           </h2>
-          <Link href="/products" className="text-xs text-gold hover:underline">View all</Link>
+          <Link href="/admin/products" className="text-xs text-gold hover:underline">View all</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

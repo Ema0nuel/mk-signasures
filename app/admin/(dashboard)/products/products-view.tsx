@@ -160,7 +160,7 @@ export default function ProductsView() {
         <h1 className="font-heading text-2xl font-light">Products</h1>
         <Button
           className="bg-primary text-primary-foreground"
-          onClick={() => router.push("/products/new")}
+          onClick={() => router.push("/admin/products/new")}
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Add Product
@@ -256,7 +256,7 @@ export default function ProductsView() {
                       key={product.id}
                       className="hover:bg-muted/50 transition-colors cursor-pointer"
                       onClick={() =>
-                        (window.location.href = `/products/${product.id}`)
+                        (window.location.href = `/admin/products/${product.id}`)
                       }
                     >
                       <td className="px-4 py-3">
@@ -390,7 +390,7 @@ export default function ProductsView() {
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() =>
-                    (window.location.href = `/products/${product.id}`)
+                    (window.location.href = `/admin/products/${product.id}`)
                   }
                 >
                   <p className="text-sm font-medium truncate">{product.name}</p>
