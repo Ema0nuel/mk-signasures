@@ -65,15 +65,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // --- Main domain: block /admin paths ---
+  // --- Admin routes on main domain (temporary: for testing) ---
   if (adminRoutes.some((route) => pathname.startsWith(route))) {
-    // Return NextResponse.next() — the /admin directory exists but is
-    // unreachable on the main domain. Next.js will serve the admin pages
-    // but since no links point here, it effectively acts as a dead end.
-    // The not-found handler or a simple pass-through keeps it invisible.
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+    // Allow /admin/login without auth check
+    if (pathname === "/admin/login") {
+      const hasSession = await verifyAdminSession(request);
+      if (hasSession) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/dashboard";
+        return NextResponse.redirect(url);
+      }
+      return NextResponse.next();
+    }
+
+    const hasSession = await verifyAdminSession(request);
+    if (!hasSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
   // --- Protected routes (authenticated only via Supabase) ---
