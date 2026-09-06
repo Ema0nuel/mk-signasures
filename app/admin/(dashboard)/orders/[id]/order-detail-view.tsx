@@ -17,7 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getOrderById, updateOrderStatus, updatePaymentStatus } from "@/app/admin/actions/data";
+import { getOrderById, updateOrderStatus, updatePaymentStatus, sendOrderStatusEmail } from "@/app/admin/actions/data";
 import type { Order, OrderItem, OrderStatus } from "@/types/database";
 
 type OrderFull = Order & {
@@ -137,11 +137,7 @@ export default function OrderDetailView({ orderId }: { orderId: string }) {
     setUpdating(false);
 
     // Send tracking email to customer (fire and forget)
-    fetch("/api/send-order-status-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id, newStatus }),
-    }).catch(() => {});
+    sendOrderStatusEmail(order.id, newStatus).catch(() => {});
   }
 
   async function handleUpdatePaymentStatus(newPaymentStatus: string) {

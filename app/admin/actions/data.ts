@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { sendOrderStatusUpdate } from "@/lib/resend";
+import { logger } from "@/lib/logger";
 
 function getAdminClient() {
   return createClient(
@@ -180,6 +182,52 @@ export async function updatePaymentStatus(id: string, paymentStatus: string) {
     .eq("id", id);
 
   return { error: error?.message ?? null };
+}
+
+export async function sendOrderStatusEmail(orderId: string, newStatus: string) {
+  try {
+    const supabase = getAdminClient();
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("id, order_number, user_id, shipping_name")
+      .eq("id", orderId)
+      .single();
+
+    if (orderError || !order) {
+      logger.error("sendOrderStatusEmail: order not found", { orderId });
+      return { error: "Order not found" };
+    }
+
+    let customerEmail = "";
+    if (order.user_id) {
+      const { data: userData } = await supabase.auth.admin.getUserById(
+        order.user_id
+      );
+      customerEmail = userData?.user?.email || "";
+    }
+
+    if (!customerEmail) {
+      return { error: null, skipped: true, reason: "No customer email found" };
+    }
+
+    const result = await sendOrderStatusUpdate(
+      customerEmail,
+      order.shipping_name || "Customer",
+      order.order_number,
+      newStatus
+    );
+
+    if (!result.success) {
+      logger.error("sendOrderStatusEmail: failed", { error: result.error });
+      return { error: "Failed to send email" };
+    }
+
+    return { error: null };
+  } catch (err) {
+    logger.error("sendOrderStatusEmail error", { error: String(err) });
+    return { error: "Something went wrong" };
+  }
 }
 
 export async function bulkUpdateOrderStatus(ids: string[], status: string) {

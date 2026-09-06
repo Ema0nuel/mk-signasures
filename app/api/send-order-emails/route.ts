@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const { reference } = body;
 
     if (!reference) {
+      logger.error("send-order-emails: missing reference in request body");
       return NextResponse.json(
         { error: "Payment reference is required" },
         { status: 400 }
@@ -18,6 +19,7 @@ export async function POST(request: Request) {
 
     // Verify payment with Paystack before confirming order
     let paymentVerified = false;
+    let paystackError = "";
     try {
       const psRes = await fetch(
         `https://api.paystack.co/transaction/verify/${reference}`,
@@ -29,13 +31,27 @@ export async function POST(request: Request) {
       );
       const psData = await psRes.json();
       paymentVerified = psData.status === true && psData.data?.status === "success";
-    } catch {
-      // If Paystack is unreachable, still try to process (webhook will handle it)
+      if (!paymentVerified) {
+        paystackError = JSON.stringify(psData);
+        logger.error("send-order-emails: Paystack verification failed", {
+          reference,
+          response: psData,
+        });
+      }
+    } catch (err) {
+      paystackError = String(err);
+      logger.error("send-order-emails: Paystack request failed", {
+        reference,
+        error: String(err),
+      });
     }
 
     if (!paymentVerified) {
       return NextResponse.json(
-        { error: "Payment not verified. Please wait for the webhook to process." },
+        {
+          error: "Payment not verified. Please wait for the webhook to process.",
+          details: paystackError,
+        },
         { status: 400 }
       );
     }
@@ -50,6 +66,10 @@ export async function POST(request: Request) {
       .single();
 
     if (orderError || !order) {
+      logger.error("send-order-emails: order not found", {
+        reference,
+        error: orderError?.message,
+      });
       return NextResponse.json(
         { error: "Order not found" },
         { status: 404 }
@@ -58,7 +78,11 @@ export async function POST(request: Request) {
 
     // If emails already sent, skip
     if (order.emails_sent) {
-      return NextResponse.json({ success: true, orderNumber: order.order_number, alreadySent: true });
+      return NextResponse.json({
+        success: true,
+        orderNumber: order.order_number,
+        alreadySent: true,
+      });
     }
 
     // Confirm the order if still pending
@@ -95,6 +119,10 @@ export async function POST(request: Request) {
     }
 
     if (!customerEmail) {
+      logger.error("send-order-emails: no customer email", {
+        orderId: order.id,
+        userId: order.user_id,
+      });
       return NextResponse.json(
         { error: "Customer email not found" },
         { status: 400 }
@@ -131,14 +159,29 @@ export async function POST(request: Request) {
       sendAdminNotification({ ...orderData, customerEmail }),
     ]);
 
-    // Mark emails as sent
-    await supabase
-      .from("orders")
-      .update({ emails_sent: true })
-      .eq("id", order.id);
+    if (!customerResult.success) {
+      logger.error("send-order-emails: customer email failed", {
+        orderId: order.id,
+        error: customerResult.error,
+      });
+    }
+    if (!adminResult.success) {
+      logger.error("send-order-emails: admin email failed", {
+        orderId: order.id,
+        error: adminResult.error,
+      });
+    }
+
+    // Mark emails as sent (only if at least customer email succeeded)
+    if (customerResult.success) {
+      await supabase
+        .from("orders")
+        .update({ emails_sent: true })
+        .eq("id", order.id);
+    }
 
     return NextResponse.json({
-      success: true,
+      success: customerResult.success,
       orderNumber: order.order_number,
     });
   } catch (err) {
