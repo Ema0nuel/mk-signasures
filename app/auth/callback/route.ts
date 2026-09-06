@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   // Password recovery: verify the token hash
   if (tokenHash && type === "recovery") {
     const { error } = await supabase.auth.verifyOtp({
-      tokenHash,
+      token_hash: tokenHash,
       type: "recovery",
     });
     if (!error) {

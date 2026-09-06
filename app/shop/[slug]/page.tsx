@@ -70,9 +70,9 @@ export default async function ProductDetailPage({
     product.product_images?.[0]?.original_url;
 
   const avgRating =
-    product.product_reviews?.length
-      ? product.product_reviews.reduce((sum: number, r: ProductReview) => sum + r.rating, 0) /
-        product.product_reviews.length
+    product.reviews?.length
+      ? product.reviews.reduce((sum: number, r: ProductReview) => sum + r.rating, 0) /
+        product.reviews.length
       : null;
 
   return (
@@ -96,12 +96,12 @@ export default async function ProductDetailPage({
               availability: product.status === "active" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
               url: `https://mksignasures.shop/shop/${product.slug}`,
             },
-            ...(avgRating && product.product_reviews?.length
+            ...(avgRating && product.reviews?.length
               ? {
                   aggregateRating: {
                     "@type": "AggregateRating",
                     ratingValue: Math.round(avgRating * 10) / 10,
-                    reviewCount: product.product_reviews.length,
+                    reviewCount: product.reviews.length,
                   },
                 }
               : {}),
