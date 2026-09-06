@@ -13,7 +13,10 @@ export default function StorefrontShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin =
+    pathname.startsWith("/admin") ||
+    (typeof window !== "undefined" &&
+      window.location.hostname.startsWith("admin."));
 
   if (isAdmin) {
     return <>{children}</>;
