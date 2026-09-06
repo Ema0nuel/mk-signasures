@@ -20,28 +20,46 @@ export default function ResetPasswordClient() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Check if there's a recovery session in the URL hash
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery") && hash.includes("access_token")) {
-      // Supabase handles the token via the hash automatically
-      // Just verify the session exists
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setValidSession(!!session);
-        if (!session) {
-          setError("Invalid or expired reset link. Please request a new one.");
-        }
-        // Clean up the URL hash
+    async function checkSession() {
+      // First: check URL hash for implicit flow tokens (access_token + type=recovery)
+      const hash = window.location.hash;
+      if (hash.includes("type=recovery") && hash.includes("access_token")) {
+        // Supabase processes the hash automatically, session should be set
+        // Wait a moment for Supabase to process
+        await new Promise((r) => setTimeout(r, 500));
         window.history.replaceState(null, "", window.location.pathname);
-      });
-    } else {
-      // Check if user is already in a recovery session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setValidSession(!!session);
-        if (!session) {
+      }
+
+      // Check URL query params for PKCE flow (code + type=recovery)
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const type = params.get("type");
+      if (code && type === "recovery") {
+        // Exchange the code for a session
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
           setError("Invalid or expired reset link. Please request a new one.");
+          setValidSession(false);
+          return;
         }
-      });
+        // Clean up URL
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+
+      // Now check if we have a valid session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        setValidSession(true);
+      } else {
+        setError("Invalid or expired reset link. Please request a new one.");
+        setValidSession(false);
+      }
     }
+
+    checkSession();
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -81,6 +99,21 @@ export default function ResetPasswordClient() {
       <div className="max-w-md mx-auto px-4 sm:px-6 py-16 text-center">
         <Loader2 className="h-6 w-6 animate-spin text-gold mx-auto" />
         <p className="text-sm text-muted-foreground mt-4">Verifying reset link...</p>
+      </div>
+    );
+  }
+
+  if (!validSession) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 text-center">
+        <div className="border border-border p-8">
+          <p className="text-sm text-destructive mb-6">{error}</p>
+          <Link href="/">
+            <Button className="w-full h-11 bg-primary text-primary-foreground">
+              Back to Home
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

@@ -57,6 +57,43 @@ const dividerStyles = `
   margin: 24px 0;
 `;
 
+export function resetPasswordTemplate(name: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="${baseStyles}">
+  <div style="padding: 40px 20px;">
+    <div style="${containerStyles}">
+      <div style="${headerStyles}">
+        <h1 style="color: #C9A96E; font-size: 24px; font-weight: 300; letter-spacing: 2px; margin: 0;">MK SIGNASURES</h1>
+      </div>
+      <div style="${bodyStyles}">
+        <h2 style="font-size: 20px; font-weight: 400; margin: 0 0 16px 0; color: #1a1a1a;">Reset Your Password</h2>
+        <p style="font-size: 15px; color: #555555; margin: 0 0 24px 0;">
+          Hi ${name}, we received a request to reset the password for your MK Signasures account.
+        </p>
+        <p style="font-size: 15px; color: #555555; margin: 0 0 24px 0;">
+          Click the button below to set a new password. This link expires in 1 hour.
+        </p>
+        <div style="text-align: center;">
+          <a href="{{ .ConfirmationURL }}" style="${goldButtonStyles}">Reset Password</a>
+        </div>
+        <hr style="${dividerStyles}">
+        <p style="font-size: 13px; color: #999999; margin: 0;">
+          If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+        </p>
+      </div>
+      <div style="${footerStyles}">
+        <p style="margin: 0 0 8px 0;">MK Signasures | Premium Wigs, Hair & Clothing</p>
+        <p style="margin: 0;">Questions? Reply to this email or reach us at <a href="mailto:admin@mksignasures.shop" style="color: #C9A96E; text-decoration: none;">admin@mksignasures.shop</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function welcomeEmailTemplate(name: string): string {
   return `
 <!DOCTYPE html>
