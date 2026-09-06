@@ -261,6 +261,7 @@ export interface ProductReview {
 export interface ProductWithCategory extends Product {
   categories: Category;
   product_images: ProductImage[];
+  product_variants?: ProductVariant[];
 }
 
 /** A product with all its variant data for the product detail page */

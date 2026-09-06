@@ -35,20 +35,22 @@ export async function middleware(request: NextRequest) {
   if (isAdminSubdomain(host)) {
     const hasSession = await verifyAdminSession(request);
 
-    // /admin/login on subdomain: redirect to dashboard if already logged in
-    if (pathname === "/admin/login" || pathname === "/login") {
+    // Normalize: strip /admin/ prefix for consistent handling on subdomain
+    const normalizedPathname = pathname.startsWith("/admin/")
+      ? pathname.slice(6)
+      : pathname;
+
+    // /login or /admin/login on subdomain: redirect to dashboard if already logged in
+    if (normalizedPathname === "/login") {
       if (hasSession) {
         const url = request.nextUrl.clone();
         url.pathname = "/admin/dashboard";
         return NextResponse.redirect(url);
       }
       // Not logged in: rewrite /login → /admin/login and pass through
-      if (pathname === "/login") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/admin/login";
-        return NextResponse.rewrite(url);
-      }
-      return NextResponse.next();
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.rewrite(url);
     }
 
     // Any other route on admin subdomain: require auth
@@ -59,9 +61,9 @@ export async function middleware(request: NextRequest) {
     }
 
     // Authenticated: rewrite subdomain path to /admin/* internally
-    // e.g. admin.mksignasures.shop/dashboard → /admin/dashboard
+    // normalizedPathname already strips /admin/ prefix if present
     const url = request.nextUrl.clone();
-    url.pathname = "/admin" + pathname;
+    url.pathname = "/admin" + normalizedPathname;
     return NextResponse.rewrite(url);
   }
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
-import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw } from "lucide-react";
+import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw, X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import WishlistButton from "@/components/product/wishlist-button";
@@ -50,6 +50,7 @@ export default function ProductDetailClient({
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
   const { open: openCart } = useCartDrawer();
@@ -73,8 +74,13 @@ export default function ProductDetailClient({
           img.product_variant_id === null
       )
     : allImages;
-  const displayImages =
-    variantImages.length > 0 ? variantImages : allImages;
+  const displayImages = (variantImages.length > 0 ? variantImages : allImages)
+    .slice()
+    .sort((a, b) => {
+      if (a.is_primary && !b.is_primary) return -1;
+      if (!a.is_primary && b.is_primary) return 1;
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    });
 
   // Build variant name from selected options
   const variantName = attributes
@@ -138,7 +144,10 @@ export default function ProductDetailClient({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
           {/* Images */}
           <div className="space-y-4">
-            <div className="relative aspect-3/4 overflow-hidden bg-secondary ring-1 ring-foreground/10">
+            <div
+              className="relative aspect-3/4 overflow-hidden bg-secondary ring-1 ring-foreground/10 cursor-zoom-in"
+              onClick={() => setLightboxOpen(true)}
+            >
               {displayImages.length > 0 ? (
                 <ImageWithFallback
                   src={
@@ -418,6 +427,100 @@ export default function ProductDetailClient({
         {/* Reviews */}
         <ProductReviews reviews={reviews} productName={product.name} productId={product.id} />
       </div>
+
+      {/* Image Lightbox */}
+      {lightboxOpen && displayImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-100 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightboxOpen(false)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Previous */}
+          {displayImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveImageIndex((prev) =>
+                  prev === 0 ? displayImages.length - 1 : prev - 1
+                );
+              }}
+              className="absolute left-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Image */}
+          <div
+            className="relative w-full h-full max-w-5xl max-h-[90vh] mx-4 sm:mx-12"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ImageWithFallback
+              src={
+                displayImages[activeImageIndex]?.optimized_url ||
+                displayImages[activeImageIndex]?.original_url
+              }
+              alt={product.name}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 80vw"
+            />
+          </div>
+
+          {/* Next */}
+          {displayImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveImageIndex((prev) =>
+                  prev === displayImages.length - 1 ? 0 : prev + 1
+                );
+              }}
+              className="absolute right-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Thumbnail strip */}
+          {displayImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {displayImages.map((img, idx) => (
+                <button
+                  key={img.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImageIndex(idx);
+                  }}
+                  className={`relative w-12 h-14 overflow-hidden ring-2 transition-all duration-150 ${
+                    idx === activeImageIndex
+                      ? "ring-gold"
+                      : "ring-white/30 hover:ring-white/60"
+                  }`}
+                >
+                  <ImageWithFallback
+                    src={img.optimized_url || img.original_url}
+                    alt={img.alt_text || product.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* JSON-LD Structured Data */}
       <script

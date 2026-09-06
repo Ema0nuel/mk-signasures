@@ -55,12 +55,13 @@ export default function ProductCard({
 
   const variants = sampleDetail?.product_variants ?? [];
   const attributes = sampleDetail?.variant_attributes ?? [];
-  const hasVariants = variants.length > 1 && attributes.length > 0;
+  const hasLoadedVariants = sampleDetail !== null;
+  const hasVariants = hasLoadedVariants && variants.length > 1 && attributes.length > 0;
 
   const outOfStock =
     product.status === "out_of_stock" ||
-    variants.length === 0 ||
-    variants.every((v) => !v.is_active || v.stock_quantity <= 0);
+    (hasLoadedVariants && variants.length === 0) ||
+    (hasLoadedVariants && variants.every((v) => !v.is_active || v.stock_quantity <= 0));
 
   const currentSelection = selections[product.id];
   const selectedVariantId =

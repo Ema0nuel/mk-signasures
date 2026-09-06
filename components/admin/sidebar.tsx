@@ -18,32 +18,12 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { adminLogout } from "@/app/admin/actions/auth";
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Products",
-    href: "/products",
-    icon: Package,
-  },
-  {
-    label: "Categories",
-    href: "/categories",
-    icon: FolderTree,
-  },
-  {
-    label: "Orders",
-    href: "/orders",
-    icon: ShoppingCart,
-  },
-  {
-    label: "Customers",
-    href: "/customers",
-    icon: Users,
-  },
+const NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Products", href: "/products", icon: Package },
+  { label: "Categories", href: "/categories", icon: FolderTree },
+  { label: "Orders", href: "/orders", icon: ShoppingCart },
+  { label: "Customers", href: "/customers", icon: Users },
 ];
 
 interface AdminSidebarProps {
@@ -62,9 +42,26 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  // Detect subdomain: admin subdomain uses bare paths (/dashboard),
+  // main domain uses /admin/dashboard paths.
+  const isSubdomain =
+    typeof window !== "undefined" &&
+    window.location.hostname.startsWith("admin.");
+  const hrefPrefix = isSubdomain ? "" : "/admin";
+
+  // Normalize pathname: strip /admin/ prefix for consistent active state matching
+  const normalizedPathname = pathname.startsWith("/admin/")
+    ? pathname.slice(6)
+    : pathname;
+
+  const navItems = NAV_ITEMS.map((item) => ({
+    ...item,
+    href: `${hrefPrefix}${item.href}`,
+  }));
+
   async function handleSignOut() {
     await adminLogout();
-    router.push("/login");
+    router.push(`${hrefPrefix}/login`);
     router.refresh();
   }
 
@@ -98,7 +95,7 @@ export default function AdminSidebar({
           onToggle={onToggle}
           onNavClick={handleNavClick}
           onSignOut={handleSignOut}
-          pathname={pathname}
+          pathname={normalizedPathname}
           showClose={false}
           onMobileClose={onMobileClose}
         />
@@ -116,7 +113,7 @@ export default function AdminSidebar({
           onToggle={onToggle}
           onNavClick={handleNavClick}
           onSignOut={handleSignOut}
-          pathname={pathname}
+          pathname={normalizedPathname}
           showClose
           onMobileClose={onMobileClose}
         />
