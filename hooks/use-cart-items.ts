@@ -72,11 +72,11 @@ export function useCartItems() {
       try {
         const supabase = createClient();
 
-        // 1. Fetch variants with product, images, and selections
+        // 1. Fetch variants with product and selections
         const { data: variants, error } = await supabase
           .from("product_variants")
           .select(
-            "*, products(*), product_images(*), product_variant_selections(*)"
+            "*, products(*), product_variant_selections(*)"
           )
           .in("id", unresolvedIds);
 
@@ -90,6 +90,13 @@ export function useCartItems() {
             variants.map((v) => (v.products as unknown as Product).id)
           ),
         ];
+
+        // 2b. Fetch images at product level (covers product-level images)
+        const { data: productImages } = await supabase
+          .from("product_images")
+          .select("*")
+          .in("product_id", productIds)
+          .order("sort_order");
 
         // 3. Fetch variant attributes with their options
         const { data: attributes } = await supabase
@@ -121,7 +128,6 @@ export function useCartItems() {
           if (!variant) continue;
 
           const product = variant.products as unknown as Product;
-          const images = variant.product_images as unknown as ProductImage[];
           const selections = (variant.product_variant_selections ??
             []) as unknown as ProductVariantSelection[];
           const productAttrs = attrsByProduct[product.id] ?? [];
@@ -197,8 +203,12 @@ export function useCartItems() {
             })
           );
 
+          // Get images for this product (product-level images)
+          const images = (productImages ?? []).filter(
+            (img) => img.product_id === product.id
+          );
           const primaryImage =
-            images?.find((img) => img.is_primary) ?? images?.[0] ?? null;
+            images.find((img) => img.is_primary) ?? images[0] ?? null;
 
           enriched[variantId] = {
             ...local,

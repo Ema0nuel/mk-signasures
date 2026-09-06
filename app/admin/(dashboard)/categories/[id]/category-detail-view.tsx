@@ -68,7 +68,7 @@ export default function CategoryDetailView({
     ]).then(([cat, cats]) => {
       if (!cat) {
         toast.error("Category not found");
-        router.push("/admin/categories");
+        router.push("/categories");
         return;
       }
       setCategory(cat);
@@ -122,7 +122,7 @@ export default function CategoryDetailView({
 
     toast.success("Category updated");
     setSaving(false);
-    router.push("/admin/categories");
+    router.push("/categories");
   }
 
   async function handleDeleteClick() {
@@ -138,7 +138,7 @@ export default function CategoryDetailView({
       toast.error(error);
     } else {
       toast.success("Category deleted");
-      router.push("/admin/categories");
+      router.push("/categories");
     }
     setDeleteLoading(false);
     setDeleteOpen(false);
@@ -160,7 +160,7 @@ export default function CategoryDetailView({
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link
-          href="/admin/categories"
+          href="/categories"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Categories

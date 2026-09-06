@@ -400,9 +400,11 @@ export async function updateProductStatus(id: string, status: string) {
 
 export async function deleteProducts(ids: string[]) {
   const supabase = getAdminClient();
+  // Soft delete: archive products instead of removing them
+  // (order_items FK prevents hard delete of ordered products)
   const { error } = await supabase
     .from("products")
-    .delete()
+    .update({ status: "archived", updated_at: new Date().toISOString() })
     .in("id", ids);
 
   return { error: error?.message ?? null };

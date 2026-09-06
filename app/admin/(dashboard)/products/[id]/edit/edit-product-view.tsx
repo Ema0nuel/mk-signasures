@@ -200,7 +200,7 @@ export default function EditProductView({ productId }: { productId: string }) {
 
     if (!productResult.product) {
       toast.error("Product not found");
-      router.push("/admin/products");
+      router.push("/products");
       return;
     }
 
@@ -270,7 +270,7 @@ export default function EditProductView({ productId }: { productId: string }) {
 
     toast.success("Product updated");
     setSaving(false);
-    router.push("/admin/products");
+    router.push("/products");
   }
 
   // ============================================================
@@ -703,7 +703,7 @@ export default function EditProductView({ productId }: { productId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link
-          href={`/admin/products/${productId}`}
+          href={`/products/${productId}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back

@@ -159,7 +159,7 @@ export default function CategoriesView() {
         <tr
           className="hover:bg-muted/50 transition-colors cursor-pointer"
           onClick={() =>
-            (window.location.href = `/admin/categories/${cat.id}`)
+            (window.location.href = `/categories/${cat.id}`)
           }
         >
           <td className="px-4 py-3">
@@ -232,7 +232,7 @@ export default function CategoriesView() {
     return (
       <>
         <Link
-          href={`/admin/categories/${cat.id}`}
+          href={`/categories/${cat.id}`}
           className="block border-b border-border px-4 py-3 space-y-2 hover:bg-muted/50 transition-colors"
           style={{ paddingLeft: `${16 + depth * 20}px` }}
         >

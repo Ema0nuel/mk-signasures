@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
     await supabase.auth.signInWithPassword({ email, password });
 
     toast.success("Welcome back");
-    router.push("/admin/dashboard");
+    router.push("/dashboard");
     router.refresh();
   }
 

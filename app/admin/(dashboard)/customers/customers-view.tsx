@@ -165,7 +165,7 @@ export default function CustomersView() {
                     key={customer.id}
                     className="hover:bg-muted/50 transition-colors cursor-pointer"
                     onClick={() =>
-                      (window.location.href = `/admin/customers/${customer.id}`)
+                      (window.location.href = `/customers/${customer.id}`)
                     }
                   >
                     <td className="px-4 py-3">
@@ -245,7 +245,7 @@ export default function CustomersView() {
               key={customer.id}
               className="border border-border bg-card p-3 flex items-center gap-3 cursor-pointer"
               onClick={() =>
-                (window.location.href = `/admin/customers/${customer.id}`)
+                (window.location.href = `/customers/${customer.id}`)
               }
             >
               <div className="w-10 h-10 bg-gold/10 border border-border flex items-center justify-center shrink-0 overflow-hidden">

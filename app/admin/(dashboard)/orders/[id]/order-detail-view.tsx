@@ -184,7 +184,7 @@ export default function OrderDetailView({ orderId }: { orderId: string }) {
         <ShoppingCart className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">Order not found</p>
         <Link
-          href="/admin/orders"
+          href="/orders"
           className="text-sm text-gold hover:underline mt-2 inline-block"
         >
           Back to orders
@@ -200,7 +200,7 @@ export default function OrderDetailView({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-6">
       <Link
-        href="/admin/orders"
+        href="/orders"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Orders

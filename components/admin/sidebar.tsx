@@ -21,27 +21,27 @@ import { adminLogout } from "@/app/admin/actions/auth";
 const navItems = [
   {
     label: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     label: "Products",
-    href: "/admin/products",
+    href: "/products",
     icon: Package,
   },
   {
     label: "Categories",
-    href: "/admin/categories",
+    href: "/categories",
     icon: FolderTree,
   },
   {
     label: "Orders",
-    href: "/admin/orders",
+    href: "/orders",
     icon: ShoppingCart,
   },
   {
     label: "Customers",
-    href: "/admin/customers",
+    href: "/customers",
     icon: Users,
   },
 ];
@@ -64,7 +64,7 @@ export default function AdminSidebar({
 
   async function handleSignOut() {
     await adminLogout();
-    router.push("/admin/login");
+    router.push("/login");
     router.refresh();
   }
 

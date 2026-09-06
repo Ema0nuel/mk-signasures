@@ -350,7 +350,7 @@ export default function OrdersView() {
                       key={order.id}
                       className="hover:bg-muted/50 transition-colors cursor-pointer"
                       onClick={() =>
-                        (window.location.href = `/admin/orders/${order.id}`)
+                        (window.location.href = `/orders/${order.id}`)
                       }
                     >
                       <td className="px-4 py-3">
@@ -472,7 +472,7 @@ export default function OrdersView() {
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() =>
-                    (window.location.href = `/admin/orders/${order.id}`)
+                    (window.location.href = `/orders/${order.id}`)
                   }
                 >
                   <div className="flex items-center gap-2">

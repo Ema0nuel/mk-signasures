@@ -11,11 +11,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, Plus, Package, Trash2, Archive, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, Plus, Package, Archive, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   getProducts,
-  deleteProducts,
   updateProductStatus,
 } from "@/app/admin/actions/data";
 import type { Product, Category, ProductImage } from "@/types/database";
@@ -62,7 +61,7 @@ export default function ProductsView() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkAction, setBulkAction] = useState<"delete" | "archive" | "out_of_stock" | null>(null);
+  const [bulkAction, setBulkAction] = useState<"archive" | "out_of_stock" | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
@@ -109,33 +108,21 @@ export default function ProductsView() {
     setBulkLoading(true);
 
     const ids = Array.from(selected);
-
-    if (bulkAction === "delete") {
-      const { error } = await deleteProducts(ids);
-      if (error) {
-        toast.error(error);
-        setBulkLoading(false);
-        return;
-      }
-      setProducts((prev) => prev.filter((p) => !selected.has(p.id)));
-      toast.success(`${ids.length} product${ids.length !== 1 ? "s" : ""} deleted`);
+    const status: "archived" | "out_of_stock" = bulkAction === "archive" ? "archived" : "out_of_stock";
+    const errors: string[] = [];
+    for (const id of ids) {
+      const { error } = await updateProductStatus(id, status);
+      if (error) errors.push(error);
+    }
+    if (errors.length > 0) {
+      toast.error(`Failed to update ${errors.length} product(s)`);
     } else {
-      const status: "archived" | "out_of_stock" = bulkAction === "archive" ? "archived" : "out_of_stock";
-      const errors: string[] = [];
-      for (const id of ids) {
-        const { error } = await updateProductStatus(id, status);
-        if (error) errors.push(error);
-      }
-      if (errors.length > 0) {
-        toast.error(`Failed to update ${errors.length} product(s)`);
-      } else {
-        setProducts((prev) =>
-          prev.map((p) => (selected.has(p.id) ? { ...p, status } : p))
-        );
-        toast.success(
-          `${ids.length} product${ids.length !== 1 ? "s" : ""} ${status === "archived" ? "archived" : "marked out of stock"}`
-        );
-      }
+      setProducts((prev) =>
+        prev.map((p) => (selected.has(p.id) ? { ...p, status } : p))
+      );
+      toast.success(
+        `${ids.length} product${ids.length !== 1 ? "s" : ""} ${status === "archived" ? "archived" : "marked out of stock"}`
+      );
     }
 
     setSelected(new Set());
@@ -149,7 +136,7 @@ export default function ProductsView() {
         <h1 className="font-heading text-2xl font-light">Products</h1>
         <Button
           className="bg-primary text-primary-foreground"
-          onClick={() => router.push("/admin/products/new")}
+          onClick={() => router.push("/products/new")}
         >
           <Plus className="w-4 h-4 mr-1.5" />
           Add Product
@@ -245,7 +232,7 @@ export default function ProductsView() {
                       key={product.id}
                       className="hover:bg-muted/50 transition-colors cursor-pointer"
                       onClick={() =>
-                        (window.location.href = `/admin/products/${product.id}`)
+                        (window.location.href = `/products/${product.id}`)
                       }
                     >
                       <td className="px-4 py-3">
@@ -379,7 +366,7 @@ export default function ProductsView() {
                 <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() =>
-                    (window.location.href = `/admin/products/${product.id}`)
+                    (window.location.href = `/products/${product.id}`)
                   }
                 >
                   <p className="text-sm font-medium truncate">{product.name}</p>
@@ -431,15 +418,6 @@ export default function ProductsView() {
               <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
               Out of Stock
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-red-200 text-red-600 hover:bg-red-50"
-              onClick={() => setBulkAction("delete")}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-              Delete
-            </Button>
             <button
               onClick={() => setSelected(new Set())}
               className="text-xs text-muted-foreground hover:text-foreground ml-2"
@@ -460,17 +438,13 @@ export default function ProductsView() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {bulkAction === "delete"
-                ? "Delete Products"
-                : bulkAction === "archive"
+              {bulkAction === "archive"
                 ? "Archive Products"
                 : "Mark as Out of Stock"}
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            {bulkAction === "delete"
-              ? `This will permanently delete ${selected.size} product${selected.size !== 1 ? "s" : ""}. This action cannot be undone.`
-              : `This will ${bulkAction === "archive" ? "archive" : "mark as out of stock"} ${selected.size} product${selected.size !== 1 ? "s" : ""}.`}
+            This will {bulkAction === "archive" ? "archive" : "mark as out of stock"} {selected.size} product{selected.size !== 1 ? "s" : ""}.
           </p>
           <DialogFooter>
             <button
@@ -482,20 +456,12 @@ export default function ProductsView() {
             <Button
               onClick={handleBulkAction}
               disabled={bulkLoading}
-              className={
-                bulkAction === "delete"
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-primary text-primary-foreground"
-              }
+              className="bg-primary text-primary-foreground"
             >
               {bulkLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {bulkAction === "delete"
-                ? "Delete"
-                : bulkAction === "archive"
-                ? "Archive"
-                : "Mark Out of Stock"}
+              {bulkAction === "archive" ? "Archive" : "Mark Out of Stock"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -139,7 +139,7 @@ export default function DashboardView() {
               <Clock className="w-4 h-4 text-muted-foreground" />
               Recent Orders
             </h2>
-            <Link href="/admin/orders" className="text-xs text-gold hover:underline">View all</Link>
+            <Link href="/orders" className="text-xs text-gold hover:underline">View all</Link>
           </div>
           <div className="divide-y divide-border">
             {stats.recentOrders.length === 0 ? (
@@ -148,7 +148,7 @@ export default function DashboardView() {
               stats.recentOrders.map((order) => {
                 const status = statusConfig[order.status] || statusConfig.pending;
                 return (
-                  <Link key={order.id} href={`/admin/orders/${order.id}`} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors">
+                  <Link key={order.id} href={`/orders/${order.id}`} className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors">
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{order.order_number}</p>
                       <p className="text-xs text-muted-foreground truncate">{order.shipping_name}</p>
@@ -177,7 +177,7 @@ export default function DashboardView() {
               <p className="px-5 py-8 text-sm text-muted-foreground text-center">No orders yet</p>
             ) : (
               stats.mostOrdered.map((item, i) => (
-                <Link key={item.product_id} href={`/admin/products/${item.product_id}`} className="px-5 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <Link key={item.product_id} href={`/products/${item.product_id}`} className="px-5 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-xs font-medium text-muted-foreground w-5 text-center">{i + 1}</span>
                     <p className="text-sm font-medium truncate">{item.product_name}</p>
@@ -199,7 +199,7 @@ export default function DashboardView() {
             <Box className="w-4 h-4 text-muted-foreground" />
             Inventory
           </h2>
-          <Link href="/admin/products" className="text-xs text-gold hover:underline">View all</Link>
+          <Link href="/products" className="text-xs text-gold hover:underline">View all</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -218,7 +218,7 @@ export default function DashboardView() {
                 stats.lowStockProducts.map((product) => {
                   const primaryImage = product.product_images.find((img) => img.is_primary);
                   return (
-                    <tr key={product.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/admin/products/${product.id}`)}>
+                    <tr key={product.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/products/${product.id}`)}>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 border border-border bg-muted flex items-center justify-center shrink-0 overflow-hidden">
