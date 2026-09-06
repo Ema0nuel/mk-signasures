@@ -96,6 +96,7 @@ export default function AdminSidebar({
           onNavClick={handleNavClick}
           onSignOut={handleSignOut}
           pathname={normalizedPathname}
+          navItems={navItems}
           showClose={false}
           onMobileClose={onMobileClose}
         />
@@ -114,6 +115,7 @@ export default function AdminSidebar({
           onNavClick={handleNavClick}
           onSignOut={handleSignOut}
           pathname={normalizedPathname}
+          navItems={navItems}
           showClose
           onMobileClose={onMobileClose}
         />
@@ -128,6 +130,7 @@ function SidebarContent({
   onNavClick,
   onSignOut,
   pathname,
+  navItems,
   showClose,
   onMobileClose,
 }: {
@@ -136,6 +139,7 @@ function SidebarContent({
   onNavClick: () => void;
   onSignOut: () => void;
   pathname: string;
+  navItems: { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[];
   showClose: boolean;
   onMobileClose: () => void;
 }) {
