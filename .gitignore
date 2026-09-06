@@ -45,7 +45,6 @@ PRODUCT.md
 migration/
 .impeccable/**
 skills-lock.json
-components.json
 
 # supabase local
 supabase/.temp/
