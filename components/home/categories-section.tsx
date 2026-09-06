@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { ArrowRight } from "lucide-react";
 import type { Category } from "@/types/database";
 
@@ -42,7 +42,7 @@ export default function CategoriesSection({
               className="group relative aspect-3/4 overflow-hidden rounded-2xl border border-border bg-secondary"
             >
               {bannerSrc ? (
-                <Image
+                <ImageWithFallback
                   src={bannerSrc}
                   alt={category.name}
                   fill

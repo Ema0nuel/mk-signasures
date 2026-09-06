@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -140,7 +140,7 @@ export default function ProductDetailClient({
           <div className="space-y-4">
             <div className="relative aspect-3/4 overflow-hidden bg-secondary ring-1 ring-foreground/10">
               {displayImages.length > 0 ? (
-                <Image
+                <ImageWithFallback
                   src={
                     displayImages[activeImageIndex]?.optimized_url ||
                     displayImages[activeImageIndex]?.original_url
@@ -179,7 +179,7 @@ export default function ProductDetailClient({
                         : "ring-foreground/10 hover:ring-foreground/30"
                     }`}
                   >
-                    <Image
+                    <ImageWithFallback
                       src={img.optimized_url || img.original_url}
                       alt={img.alt_text || product.name}
                       fill

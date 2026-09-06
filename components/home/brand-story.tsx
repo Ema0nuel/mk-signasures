@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { ArrowRight } from "lucide-react";
 
 export default function BrandStory() {
@@ -34,7 +34,7 @@ export default function BrandStory() {
 
         {/* Visual */}
         <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-background">
-          <Image
+          <ImageWithFallback
             src="/banner/our_story.webp"
             alt="MK Signasures story"
             fill

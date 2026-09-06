@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -60,7 +60,7 @@ export default function HeroSection() {
             className="absolute inset-0 transition-opacity duration-700 ease-in-out"
             style={{ opacity: index === current ? 1 : 0 }}
           >
-            <Image
+            <ImageWithFallback
               src={banner.src}
               alt={banner.alt}
               fill

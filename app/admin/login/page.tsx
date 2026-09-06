@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { adminLogin } from "../actions/auth";
@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
         {/* Logo / Brand */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-14 h-14">
-            <Image
+            <ImageWithFallback
               src="/images/logo-192.png"
               alt="MK Signasures"
               width={56}

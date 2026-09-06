@@ -4,6 +4,7 @@ import { jwtVerify } from "jose";
 
 const protectedRoutes = ["/checkout", "/orders", "/wishlist", "/profile", "/addresses"];
 const adminRoutes = ["/admin"];
+const ADMIN_SUBDOMAIN = "admin.mksignasures.shop";
 
 async function verifyAdminSession(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get("mk-admin-session")?.value;
@@ -19,37 +20,63 @@ async function verifyAdminSession(request: NextRequest): Promise<boolean> {
   }
 }
 
+function isAdminSubdomain(host: string | null): boolean {
+  if (!host) return false;
+  // Strip port number (e.g. "localhost:3000" → "localhost")
+  const hostname = host.split(":")[0];
+  return hostname === ADMIN_SUBDOMAIN || hostname === "localhost";
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const host = request.headers.get("host");
 
-  // Check admin routes
-  if (adminRoutes.some((route) => pathname.startsWith(route))) {
-    // Allow /admin/login without auth check
-    if (pathname === "/admin/login") {
-      // If already logged in, redirect to dashboard
-      const hasSession = await verifyAdminSession(request);
+  // --- Admin subdomain: admin.mksignasures.shop ---
+  if (isAdminSubdomain(host)) {
+    const hasSession = await verifyAdminSession(request);
+
+    // /admin/login on subdomain: redirect to dashboard if already logged in
+    if (pathname === "/admin/login" || pathname === "/login") {
       if (hasSession) {
         const url = request.nextUrl.clone();
         url.pathname = "/admin/dashboard";
         return NextResponse.redirect(url);
       }
+      // Not logged in: rewrite /login → /admin/login and pass through
+      if (pathname === "/login") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/login";
+        return NextResponse.rewrite(url);
+      }
       return NextResponse.next();
     }
 
-    const hasSession = await verifyAdminSession(request);
-
+    // Any other route on admin subdomain: require auth
     if (!hasSession) {
-      // Not authenticated — redirect to admin login
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       return NextResponse.redirect(url);
     }
 
-    // Has valid session, proceed
-    return NextResponse.next();
+    // Authenticated: rewrite subdomain path to /admin/* internally
+    // e.g. admin.mksignasures.shop/dashboard → /admin/dashboard
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin" + pathname;
+    return NextResponse.rewrite(url);
   }
 
-  // Check protected routes (authenticated only via Supabase)
+  // --- Main domain: block /admin paths ---
+  if (adminRoutes.some((route) => pathname.startsWith(route))) {
+    // Return NextResponse.next() — the /admin directory exists but is
+    // unreachable on the main domain. Next.js will serve the admin pages
+    // but since no links point here, it effectively acts as a dead end.
+    // The not-found handler or a simple pass-through keeps it invisible.
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  // --- Protected routes (authenticated only via Supabase) ---
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
     const { supabaseResponse, supabase } = await updateSession(request);
     const {
@@ -66,7 +93,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Refresh Supabase session for all other routes
+  // --- All other routes: refresh Supabase session ---
   const { supabaseResponse } = await updateSession(request);
   return supabaseResponse;
 }

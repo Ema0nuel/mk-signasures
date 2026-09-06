@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 
 export const metadata: Metadata = {
   title: "About",
@@ -20,7 +20,7 @@ export default function AboutPage() {
     <div className="min-h-screen">
       {/* Hero banner */}
       <div className="relative h-64 sm:h-80 md:h-96 w-full overflow-hidden">
-        <Image
+        <ImageWithFallback
           src="/banner/about.webp"
           alt="About MK Signasures"
           fill

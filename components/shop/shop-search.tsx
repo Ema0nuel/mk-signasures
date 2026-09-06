@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { Search, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { ProductWithCategory } from "@/types/database";
@@ -181,7 +181,7 @@ export default function ShopSearch() {
                     >
                       <div className="relative h-9 w-9 sm:h-12 sm:w-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
                         {imageUrl ? (
-                          <Image
+                          <ImageWithFallback
                             src={imageUrl}
                             alt={product.name}
                             fill

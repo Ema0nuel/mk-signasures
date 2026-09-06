@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { ShoppingBag, SlidersHorizontal, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,7 +95,7 @@ export default function ProductCard({
         className="relative block aspect-3/4 w-full overflow-hidden rounded-2xl bg-secondary"
       >
         {imageUrl ? (
-          <Image
+          <ImageWithFallback
             src={imageUrl}
             alt={product.name}
             fill

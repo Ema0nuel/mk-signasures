@@ -13,7 +13,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { adminLogout } from "@/app/admin/actions/auth";
@@ -147,7 +147,7 @@ function SidebarContent({
       {/* Brand */}
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border shrink-0">
         <div className="w-8 h-8 shrink-0 overflow-hidden">
-          <Image
+          <ImageWithFallback
             src="/images/logo-192.png"
             alt="MK Signasures"
             width={32}

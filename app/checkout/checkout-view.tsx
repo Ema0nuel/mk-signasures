@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import {
   Loader2,
   ArrowLeft,
@@ -615,7 +615,7 @@ export default function CheckoutView() {
                       <div key={item.variantId} className="flex gap-3">
                         <div className="relative h-16 w-16 shrink-0 rounded-lg bg-secondary overflow-hidden">
                           {imageUrl ? (
-                            <Image
+                            <ImageWithFallback
                               src={imageUrl}
                               alt={item.product.name}
                               fill

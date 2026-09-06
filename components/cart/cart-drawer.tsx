@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus, Plus, ShoppingBag, X, Trash2, ArrowLeft } from "lucide-react";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,7 +35,7 @@ function CartItemRow({ item }: { item: CartItemWithDetails }) {
       {/* Product image */}
       <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-secondary shrink-0">
         {item.image ? (
-          <Image
+          <ImageWithFallback
             src={item.image.optimized_url || item.image.original_url}
             alt={item.product.name}
             fill
