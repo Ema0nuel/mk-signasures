@@ -8,17 +8,16 @@ import AuthDialog from "@/components/auth/auth-dialog";
 import WhatsAppButton from "@/components/home/whatsapp-button";
 
 export default function StorefrontShell({
+  isAdmin,
   children,
 }: {
+  isAdmin: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin =
-    pathname.startsWith("/admin") ||
-    (typeof window !== "undefined" &&
-      window.location.hostname.startsWith("admin."));
+  const isViewingAdmin = isAdmin || pathname.startsWith("/admin");
 
-  if (isAdmin) {
+  if (isViewingAdmin) {
     return <>{children}</>;
   }
 

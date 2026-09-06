@@ -11,11 +11,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, Plus, Package, Archive, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, Plus, Package, Archive, AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   getProducts,
   updateProductStatus,
+  deleteProducts,
 } from "@/app/admin/actions/data";
 import type { Product, Category, ProductImage } from "@/types/database";
 
@@ -61,7 +62,7 @@ export default function ProductsView() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkAction, setBulkAction] = useState<"archive" | "out_of_stock" | null>(null);
+  const [bulkAction, setBulkAction] = useState<"archive" | "out_of_stock" | "delete" | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
@@ -108,21 +109,44 @@ export default function ProductsView() {
     setBulkLoading(true);
 
     const ids = Array.from(selected);
-    const status: "archived" | "out_of_stock" = bulkAction === "archive" ? "archived" : "out_of_stock";
-    const errors: string[] = [];
-    for (const id of ids) {
-      const { error } = await updateProductStatus(id, status);
-      if (error) errors.push(error);
-    }
-    if (errors.length > 0) {
-      toast.error(`Failed to update ${errors.length} product(s)`);
+
+    if (bulkAction === "delete") {
+      const result = await deleteProducts(ids);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        const deletedCount = result.deleted?.length ?? 0;
+        const archivedCount = result.archived?.length ?? 0;
+        if (deletedCount > 0) {
+          setProducts((prev) => prev.filter((p) => !result.deleted?.includes(p.id)));
+        }
+        if (archivedCount > 0) {
+          setProducts((prev) =>
+            prev.map((p) => (result.archived?.includes(p.id) ? { ...p, status: "archived" } : p))
+          );
+        }
+        const parts: string[] = [];
+        if (deletedCount > 0) parts.push(`${deletedCount} deleted`);
+        if (archivedCount > 0) parts.push(`${archivedCount} archived (has orders)`);
+        toast.success(parts.join(", "));
+      }
     } else {
-      setProducts((prev) =>
-        prev.map((p) => (selected.has(p.id) ? { ...p, status } : p))
-      );
-      toast.success(
-        `${ids.length} product${ids.length !== 1 ? "s" : ""} ${status === "archived" ? "archived" : "marked out of stock"}`
-      );
+      const status: "archived" | "out_of_stock" = bulkAction === "archive" ? "archived" : "out_of_stock";
+      const errors: string[] = [];
+      for (const id of ids) {
+        const { error } = await updateProductStatus(id, status);
+        if (error) errors.push(error);
+      }
+      if (errors.length > 0) {
+        toast.error(`Failed to update ${errors.length} product(s)`);
+      } else {
+        setProducts((prev) =>
+          prev.map((p) => (selected.has(p.id) ? { ...p, status } : p))
+        );
+        toast.success(
+          `${ids.length} product${ids.length !== 1 ? "s" : ""} ${status === "archived" ? "archived" : "marked out of stock"}`
+        );
+      }
     }
 
     setSelected(new Set());
@@ -418,6 +442,15 @@ export default function ProductsView() {
               <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
               Out of Stock
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => setBulkAction("delete")}
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              Delete
+            </Button>
             <button
               onClick={() => setSelected(new Set())}
               className="text-xs text-muted-foreground hover:text-foreground ml-2"
@@ -438,14 +471,22 @@ export default function ProductsView() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {bulkAction === "archive"
-                ? "Archive Products"
-                : "Mark as Out of Stock"}
+              {bulkAction === "delete"
+                ? "Delete Products"
+                : bulkAction === "archive"
+                  ? "Archive Products"
+                  : "Mark as Out of Stock"}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            This will {bulkAction === "archive" ? "archive" : "mark as out of stock"} {selected.size} product{selected.size !== 1 ? "s" : ""}.
-          </p>
+          {bulkAction === "delete" ? (
+            <p className="text-sm text-muted-foreground">
+              This will permanently delete {selected.size} product{selected.size !== 1 ? "s" : ""} and their images. Products with existing orders will be archived instead.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              This will {bulkAction === "archive" ? "archive" : "mark as out of stock"} {selected.size} product{selected.size !== 1 ? "s" : ""}.
+            </p>
+          )}
           <DialogFooter>
             <button
               onClick={() => setBulkAction(null)}
@@ -456,12 +497,20 @@ export default function ProductsView() {
             <Button
               onClick={handleBulkAction}
               disabled={bulkLoading}
-              className="bg-primary text-primary-foreground"
+              className={
+                bulkAction === "delete"
+                  ? "bg-red-600 text-white hover:bg-red-700"
+                  : "bg-primary text-primary-foreground"
+              }
             >
               {bulkLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {bulkAction === "archive" ? "Archive" : "Mark Out of Stock"}
+              {bulkAction === "delete"
+                ? "Delete"
+                : bulkAction === "archive"
+                  ? "Archive"
+                  : "Mark Out of Stock"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -446,16 +446,68 @@ export async function updateProductStatus(id: string, status: string) {
   return { error: error?.message ?? null };
 }
 
-export async function deleteProducts(ids: string[]) {
+export async function deleteProducts(ids: string[]): Promise<{
+  error: string | null;
+  deleted: string[];
+  archived: string[];
+  message?: string;
+}> {
   const supabase = getAdminClient();
-  // Soft delete: archive products instead of removing them
-  // (order_items FK prevents hard delete of ordered products)
+
+  // Check which products have been ordered (order_items FK blocks hard delete)
+  const { data: orderedItems } = await supabase
+    .from("order_items")
+    .select("product_id")
+    .in("product_id", ids);
+
+  const orderedIds = new Set(orderedItems?.map((i) => i.product_id) ?? []);
+  const canDelete = ids.filter((id) => !orderedIds.has(id));
+  const mustArchive = ids.filter((id) => orderedIds.has(id));
+
+  // Archive products that have orders
+  if (mustArchive.length > 0) {
+    await supabase
+      .from("products")
+      .update({ status: "archived", updated_at: new Date().toISOString() })
+      .in("id", mustArchive);
+  }
+
+  if (canDelete.length === 0) {
+    return {
+      error: null,
+      archived: mustArchive,
+      deleted: [],
+      message: "All selected products have orders and were archived instead",
+    };
+  }
+
+  // Fetch storage paths for images of products to delete
+  const { data: images } = await supabase
+    .from("product_images")
+    .select("id, storage_path")
+    .in("product_id", canDelete);
+
+  // Delete storage files
+  if (images && images.length > 0) {
+    const storagePaths = images
+      .map((img) => img.storage_path)
+      .filter(Boolean);
+    if (storagePaths.length > 0) {
+      await supabase.storage.from("product-images").remove(storagePaths);
+    }
+  }
+
+  // Hard delete products (cascades to variants, images, reviews, wishlist items)
   const { error } = await supabase
     .from("products")
-    .update({ status: "archived", updated_at: new Date().toISOString() })
-    .in("id", ids);
+    .delete()
+    .in("id", canDelete);
 
-  return { error: error?.message ?? null };
+  return {
+    error: error?.message ?? null,
+    deleted: canDelete,
+    archived: mustArchive,
+  };
 }
 
 export async function updateProduct(

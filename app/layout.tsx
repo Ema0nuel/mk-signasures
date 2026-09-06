@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "@/components/providers";
@@ -76,7 +77,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const headerStore = await headers();
+  const host = headerStore.get("host") || "";
+  const isAdminSubdomain = host.split(":")[0].startsWith("admin.");
+
   return (
     <html
       lang="en"
@@ -107,7 +112,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           <AuthDialogProvider>
             <CartDrawerProvider>
-              <StorefrontShell>{children}</StorefrontShell>
+              <StorefrontShell isAdmin={isAdminSubdomain}>{children}</StorefrontShell>
             </CartDrawerProvider>
           </AuthDialogProvider>
         </Providers>
