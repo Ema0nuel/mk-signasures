@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
-import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw, X, ChevronLeft, ChevronRight, ZoomIn, Loader2 } from "lucide-react";
+import { Minus, Plus, ShoppingBag, ChevronDown, Truck, RotateCcw, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import WishlistButton from "@/components/product/wishlist-button";
@@ -52,11 +52,7 @@ export default function ProductDetailClient({
   const [descExpanded, setDescExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
-
-  // Show spinner when switching images
-  useEffect(() => {
-    setImageLoading(true);
-  }, [activeImageIndex]);
+  const [prevImageIndex, setPrevImageIndex] = useState(activeImageIndex);
 
   const addItem = useCartStore((s) => s.addItem);
   const { open: openCart } = useCartDrawer();
@@ -87,6 +83,26 @@ export default function ProductDetailClient({
       if (!a.is_primary && b.is_primary) return 1;
       return (a.sort_order ?? 0) - (b.sort_order ?? 0);
     });
+
+  // Detect cached images to skip the spinner
+  const checkIfCached = useCallback((src: string) => {
+    if (!src) return;
+    const img = new Image();
+    img.onload = () => setImageLoading(false);
+    img.src = src;
+  }, []);
+
+  // Show spinner when switching images, but skip if already cached
+  useEffect(() => {
+    if (activeImageIndex === prevImageIndex) return;
+    setPrevImageIndex(activeImageIndex);
+    setImageLoading(true);
+
+    const src =
+      displayImages[activeImageIndex]?.optimized_url ||
+      displayImages[activeImageIndex]?.original_url;
+    if (src) checkIfCached(src);
+  }, [activeImageIndex, prevImageIndex, displayImages, checkIfCached]);
 
   // Build variant name from selected options
   const variantName = attributes
@@ -165,8 +181,9 @@ export default function ProductDetailClient({
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
+                    loading="eager"
                     onLoad={() => setImageLoading(false)}
+                    onError={() => setImageLoading(false)}
                   />
                   {imageLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-secondary/80 z-10">
@@ -488,6 +505,7 @@ export default function ProductDetailClient({
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 80vw"
               onLoad={() => setImageLoading(false)}
+              onError={() => setImageLoading(false)}
             />
             {imageLoading && (
               <div className="absolute inset-0 flex items-center justify-center">

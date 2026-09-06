@@ -3,6 +3,7 @@
 export const logger = {
   error(message: string, context?: Record<string, unknown>) {
     if (process.env.NODE_ENV === "development") {
+      // eslint-disable-next-line no-console
       console.error(message, context ?? "");
     }
     // In production, swap this with Sentry, Pino, or any structured logging service
