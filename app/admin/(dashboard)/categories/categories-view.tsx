@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   getCategories,
   createCategory,
+  updateCategory,
+  uploadCategoryImage,
 } from "@/app/admin/actions/data";
+import { compressImage } from "@/lib/image-compress";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +25,8 @@ import {
   Plus,
   ChevronRight,
   Loader2,
+  X,
+  ImageIcon,
 } from "lucide-react";
 import type { Category } from "@/types/database";
 
@@ -68,6 +73,9 @@ export default function CategoriesView() {
   const [formName, setFormName] = useState("");
   const [formSlug, setFormSlug] = useState("");
   const [formSlugEdited, setFormSlugEdited] = useState(false);
+  const [formImageFile, setFormImageFile] = useState<File | null>(null);
+  const [formImagePreview, setFormImagePreview] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getCategories().then((data) => {
@@ -131,6 +139,25 @@ export default function CategoriesView() {
       return;
     }
 
+    // Upload image if present
+    if (formImageFile && data?.id) {
+      const compressed = await compressImage(formImageFile);
+      const arrayBuffer = await compressed.blob.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+      const { url, error: uploadErr } = await uploadCategoryImage(
+        data.id,
+        base64,
+        compressed.fileName,
+        compressed.mimeType
+      );
+
+      if (!uploadErr && url) {
+        await updateCategory(data.id, { image_url: url });
+        data.image_url = url;
+      }
+    }
+
     setCategories((prev) => [...prev, data]);
     toast.success("Category created");
     setSaving(false);
@@ -138,6 +165,8 @@ export default function CategoriesView() {
     setFormName("");
     setFormSlug("");
     setFormSlugEdited(false);
+    setFormImageFile(null);
+    setFormImagePreview("");
   }
 
   // ============================================================
@@ -159,7 +188,7 @@ export default function CategoriesView() {
         <tr
           className="hover:bg-muted/50 transition-colors cursor-pointer"
           onClick={() =>
-            (window.location.href = `/categories/${cat.id}`)
+            (window.location.href = `/admin/categories/${cat.id}`)
           }
         >
           <td className="px-4 py-3">
@@ -232,7 +261,7 @@ export default function CategoriesView() {
     return (
       <>
         <Link
-          href={`/categories/${cat.id}`}
+          href={`/admin/categories/${cat.id}`}
           className="block border-b border-border px-4 py-3 space-y-2 hover:bg-muted/50 transition-colors"
           style={{ paddingLeft: `${16 + depth * 20}px` }}
         >
@@ -425,6 +454,45 @@ export default function CategoriesView() {
                 }}
                 className="h-10"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Image (optional)</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFormImageFile(file);
+                  setFormImagePreview(URL.createObjectURL(file));
+                }}
+                className="hidden"
+              />
+              {formImagePreview ? (
+                <div className="relative w-full aspect-video border border-border rounded-lg overflow-hidden">
+                  <img src={formImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => {
+                      setFormImageFile(null);
+                      setFormImagePreview("");
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-muted-foreground transition-colors"
+                >
+                  <ImageIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                  <p className="text-xs text-muted-foreground">Click to upload</p>
+                </button>
+              )}
             </div>
           </div>
 

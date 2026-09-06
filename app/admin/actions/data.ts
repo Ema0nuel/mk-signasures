@@ -411,6 +411,44 @@ export async function getCategoryProductCount(categoryId: string) {
   return count ?? 0;
 }
 
+export async function uploadCategoryImage(
+  categoryId: string,
+  fileBase64: string,
+  fileName: string,
+  fileType: string
+) {
+  const supabase = getAdminClient();
+
+  const ext = fileName.split(".").pop() || "jpg";
+  const path = `category-images/${categoryId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const buffer = Buffer.from(fileBase64, "base64");
+
+  const { error: uploadError } = await supabase.storage
+    .from("product-images")
+    .upload(path, buffer, { contentType: fileType });
+
+  if (uploadError) return { url: null, error: uploadError.message };
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("product-images").getPublicUrl(path);
+
+  return { url: publicUrl, error: null };
+}
+
+export async function deleteCategoryImage(imageUrl: string) {
+  const supabase = getAdminClient();
+
+  const bucketUrl = supabase.storage.from("product-images").getPublicUrl("").data.publicUrl;
+  const path = imageUrl.replace(bucketUrl, "");
+
+  if (!path || path === imageUrl) return { error: null };
+
+  const { error } = await supabase.storage.from("product-images").remove([path]);
+  return { error: error?.message ?? null };
+}
+
 // ============================================================
 // Product Mutations
 // ============================================================

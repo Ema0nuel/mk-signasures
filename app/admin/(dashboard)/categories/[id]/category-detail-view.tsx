@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -9,7 +9,10 @@ import {
   updateCategory,
   deleteCategory,
   getCategoryProductCount,
+  uploadCategoryImage,
+  deleteCategoryImage,
 } from "@/app/admin/actions/data";
+import { compressImage } from "@/lib/image-compress";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +29,8 @@ import {
   FolderTree,
   Trash2,
   Package,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 import type { Category } from "@/types/database";
 
@@ -61,6 +66,11 @@ export default function CategoryDetailView({
   const [productCount, setProductCount] = useState(0);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Image upload
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     Promise.all([
       getCategoryById(categoryId),
@@ -80,6 +90,7 @@ export default function CategoryDetailView({
       setParentId(cat.parent_id || "");
       setSortOrder(String(cat.sort_order));
       setIsActive(cat.is_active);
+      setImageUrl(cat.image_url || null);
       setLoading(false);
     });
   }, [categoryId, router]);
@@ -142,6 +153,62 @@ export default function CategoryDetailView({
     }
     setDeleteLoading(false);
     setDeleteOpen(false);
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Use JPEG, PNG, or WebP");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large (max 5MB)");
+      return;
+    }
+
+    setUploadingImage(true);
+
+    const compressed = await compressImage(file);
+    const arrayBuffer = await compressed.blob.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+    const { url, error: uploadErr } = await uploadCategoryImage(
+      categoryId,
+      base64,
+      compressed.fileName,
+      compressed.mimeType
+    );
+
+    if (uploadErr || !url) {
+      toast.error(`Upload failed: ${uploadErr}`);
+      setUploadingImage(false);
+      return;
+    }
+
+    const { error: updateErr } = await updateCategory(categoryId, { image_url: url });
+    if (updateErr) {
+      toast.error(`Failed to save: ${updateErr}`);
+    } else {
+      setImageUrl(url);
+      setCategory((prev) => (prev ? { ...prev, image_url: url } : prev));
+      toast.success("Image uploaded");
+    }
+
+    setUploadingImage(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleRemoveImage() {
+    if (!imageUrl) return;
+    setUploadingImage(true);
+    await deleteCategoryImage(imageUrl);
+    await updateCategory(categoryId, { image_url: undefined });
+    setImageUrl(null);
+    setCategory((prev) => (prev ? { ...prev, image_url: null } : prev));
+    setUploadingImage(false);
+    toast.success("Image removed");
   }
 
   if (loading) {
@@ -272,6 +339,60 @@ export default function CategoryDetailView({
                 <option value="inactive">Inactive</option>
               </select>
             </div>
+          </div>
+
+          {/* Category Image */}
+          <div className="border border-border bg-card p-5 space-y-4">
+            <h2 className="text-sm font-medium">Category Image</h2>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            {imageUrl ? (
+              <div className="relative aspect-video border border-border rounded-lg overflow-hidden">
+                <img
+                  src={imageUrl}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="p-1.5 bg-white/80 hover:bg-white transition-colors rounded-full"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={handleRemoveImage}
+                    disabled={uploadingImage}
+                    className="p-1.5 bg-white/80 hover:bg-white transition-colors rounded-full"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                  </button>
+                </div>
+                {uploadingImage && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="w-full border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-muted-foreground transition-colors"
+              >
+                <ImageIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Upload category image</p>
+              </button>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Recommended: 1200x800px, WebP or JPEG
+            </p>
           </div>
 
           <div className="border border-border bg-card p-5 space-y-3">
