@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     title: "MK Signasures | Premium Wigs, Hair & Clothing",
     description:
       "Quality wigs, hair extensions, and clothing. Free delivery across Nigeria.",
-    url: "https://mksignasures.shop",
+    url: "https://mksgn.shop",
   },
   alternates: {
-    canonical: "https://mksignasures.shop",
+    canonical: "https://mksgn.shop",
   },
 };
 

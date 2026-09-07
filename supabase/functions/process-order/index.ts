@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
             orderNumber: order.order_number,
             userId,
           },
-          callback_url: `${origin || Deno.env.get("NEXT_PUBLIC_APP_URL") || "https://mksignatures.shop"}/checkout/success`,
+          callback_url: `${origin || Deno.env.get("NEXT_PUBLIC_APP_URL") || "https://mksgn.shop"}/checkout/success`,
         }),
       }
     );

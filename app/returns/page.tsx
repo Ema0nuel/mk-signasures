@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Returns & Exchanges | MK Signasures",
     description: "7-day return and exchange policy.",
-    url: "https://mksignasures.shop/returns",
+    url: "https://mksgn.shop/returns",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/returns",
+    canonical: "https://mksgn.shop/returns",
   },
 };
 

@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/checkout/", "/api/", "/auth/", "/test-email"],
       },
     ],
-    sitemap: "https://mksignasures.shop/sitemap.xml",
+    sitemap: "https://mksgn.shop/sitemap.xml",
   };
 }

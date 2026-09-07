@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Wishlist | MK Signasures",
     description: "Your saved products and favorites.",
-    url: "https://mksignasures.shop/wishlist",
+    url: "https://mksgn.shop/wishlist",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/wishlist",
+    canonical: "https://mksgn.shop/wishlist",
   },
   robots: { index: false, follow: false },
 };

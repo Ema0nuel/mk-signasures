@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Shipping Policy | MK Signasures",
     description: "Delivery times and shipping policies for Nigeria.",
-    url: "https://mksignasures.shop/shipping",
+    url: "https://mksgn.shop/shipping",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/shipping",
+    canonical: "https://mksgn.shop/shipping",
   },
 };
 

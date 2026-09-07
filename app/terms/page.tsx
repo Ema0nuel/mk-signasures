@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Terms of Service | MK Signasures",
     description: "Terms and conditions for using our services.",
-    url: "https://mksignasures.shop/terms",
+    url: "https://mksgn.shop/terms",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/terms",
+    canonical: "https://mksgn.shop/terms",
   },
 };
 

@@ -20,10 +20,10 @@ export const metadata: Metadata = {
     title: "Shop | MK Signasures",
     description:
       "Premium wigs, hair extensions, clothing, and accessories.",
-    url: "https://mksignasures.shop/shop",
+    url: "https://mksgn.shop/shop",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/shop",
+    canonical: "https://mksgn.shop/shop",
   },
 };
 

@@ -114,7 +114,7 @@ export function welcomeEmailTemplate(name: string): string {
           Every order comes with fast delivery across Nigeria and a hassle-free return policy.
         </p>
         <div style="text-align: center;">
-          <a href="https://mksignasures.shop/shop" style="${goldButtonStyles}">Browse Collection</a>
+          <a href="https://mksgn.shop/shop" style="${goldButtonStyles}">Browse Collection</a>
         </div>
       </div>
       <div style="${footerStyles}">
@@ -266,7 +266,7 @@ export function orderConfirmationTemplate(
         </p>
 
         <div style="text-align: center; margin-top: 32px;">
-          <a href="https://mksignasures.shop/orders" style="${goldButtonStyles}">Track Your Order</a>
+          <a href="https://mksgn.shop/orders" style="${goldButtonStyles}">Track Your Order</a>
         </div>
       </div>
       <div style="${footerStyles}">
@@ -342,7 +342,7 @@ export function orderStatusUpdateTemplate(
         </p>
 
         <div style="text-align: center; margin-top: 24px;">
-          <a href="https://mksignasures.shop/orders" style="${goldButtonStyles}">Track Your Order</a>
+          <a href="https://mksgn.shop/orders" style="${goldButtonStyles}">Track Your Order</a>
         </div>
       </div>
       <div style="${footerStyles}">

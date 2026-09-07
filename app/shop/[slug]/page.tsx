@@ -32,7 +32,7 @@ export async function generateMetadata({
     openGraph: {
       title: product.name,
       description,
-      url: `https://mksignasures.shop/shop/${product.slug}`,
+      url: `https://mksgn.shop/shop/${product.slug}`,
       type: "website",
       images: imageUrl ? [{ url: imageUrl, alt: product.name }] : [],
     },
@@ -43,7 +43,7 @@ export async function generateMetadata({
       images: imageUrl ? [imageUrl] : [],
     },
     alternates: {
-      canonical: `https://mksignasures.shop/shop/${product.slug}`,
+      canonical: `https://mksgn.shop/shop/${product.slug}`,
     },
   };
 }
@@ -88,13 +88,13 @@ export default async function ProductDetailPage({
             description: product.meta_description || product.short_description || product.description,
             image: imageUrl ? [imageUrl] : [],
             brand: { "@type": "Brand", name: "MK Signasures" },
-            url: `https://mksignasures.shop/shop/${product.slug}`,
+            url: `https://mksgn.shop/shop/${product.slug}`,
             offers: {
               "@type": "Offer",
               priceCurrency: "NGN",
               price: product.base_price,
               availability: product.status === "active" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-              url: `https://mksignasures.shop/shop/${product.slug}`,
+              url: `https://mksgn.shop/shop/${product.slug}`,
             },
             ...(avgRating && product.reviews?.length
               ? {

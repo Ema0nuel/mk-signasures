@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Addresses | MK Signasures",
     description: "Manage your delivery addresses.",
-    url: "https://mksignasures.shop/addresses",
+    url: "https://mksgn.shop/addresses",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/addresses",
+    canonical: "https://mksgn.shop/addresses",
   },
   robots: { index: false, follow: false },
 };

@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Privacy Policy | MK Signasures",
     description: "How we collect, use, and protect your data.",
-    url: "https://mksignasures.shop/privacy",
+    url: "https://mksgn.shop/privacy",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/privacy",
+    canonical: "https://mksgn.shop/privacy",
   },
 };
 

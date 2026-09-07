@@ -5,6 +5,8 @@ import { jwtVerify } from "jose";
 const protectedRoutes = ["/checkout", "/orders", "/wishlist", "/profile", "/addresses"];
 const adminRoutes = ["/admin"];
 const ADMIN_SUBDOMAIN = "admin.mksignasures.shop";
+const NEW_DOMAIN = "mksgn.shop";
+const OLD_DOMAIN = "mksignasures.shop";
 
 async function verifyAdminSession(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get("mk-admin-session")?.value;
@@ -29,9 +31,17 @@ function isAdminSubdomain(host: string | null): boolean {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const host = request.headers.get("host");
+  const host = request.headers.get("host")?.split(":")[0] ?? null;
 
-  // --- Admin subdomain: admin.mksignasures.shop ---
+  // --- Domain redirect: mksignatures.shop → mksgn.shop ---
+  // Skip admin paths (both /admin/* and admin.* subdomain)
+  if (host === OLD_DOMAIN && !pathname.startsWith("/admin")) {
+    const url = request.nextUrl.clone();
+    url.host = NEW_DOMAIN;
+    return NextResponse.redirect(url, 301);
+  }
+
+  // --- Admin subdomain: admin.mksignatures.shop ---
   if (isAdminSubdomain(host)) {
     const hasSession = await verifyAdminSession(request);
 

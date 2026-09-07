@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Profile | MK Signasures",
     description: "Manage your account settings.",
-    url: "https://mksignasures.shop/profile",
+    url: "https://mksgn.shop/profile",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/profile",
+    canonical: "https://mksgn.shop/profile",
   },
   robots: { index: false, follow: false },
 };

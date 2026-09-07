@@ -581,7 +581,7 @@ export default function ProductDetailClient({
               availability: inStock
                 ? "https://schema.org/InStock"
                 : "https://schema.org/OutOfStock",
-              url: `https://mksignasures.shop/shop/${product.slug}`,
+              url: `https://mksgn.shop/shop/${product.slug}`,
             },
             ...(reviews.length > 0
               ? {

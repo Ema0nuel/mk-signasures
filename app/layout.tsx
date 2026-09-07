@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   description:
     "Discover quality wigs, hair extensions, and clothing at MK Signasures. Premium products, fast delivery across Nigeria, 7-day returns.",
-  metadataBase: new URL("https://mksignasures.shop"),
+  metadataBase: new URL("https://mksgn.shop"),
   openGraph: {
     type: "website",
     locale: "en_NG",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     google: "-8gzpKE_2bVk5-cgTdkrVHwodqpKg2rJN5jYdbCtyI4",
   },
   alternates: {
-    canonical: "https://mksignasures.shop",
+    canonical: "https://mksgn.shop",
   },
 };
 
@@ -95,8 +95,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "MK Signasures",
-              url: "https://mksignasures.shop",
-              logo: "https://mksignasures.shop/images/logo-192.png",
+              url: "https://mksgn.shop",
+              logo: "https://mksgn.shop/images/logo-192.png",
               description:
                 "Premium wigs, hair extensions, and clothing in Nigeria.",
               contactPoint: {

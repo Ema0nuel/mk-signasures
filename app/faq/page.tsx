@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "FAQ | MK Signasures",
     description: "Quick answers to common questions.",
-    url: "https://mksignasures.shop/faq",
+    url: "https://mksgn.shop/faq",
   },
   alternates: {
-    canonical: "https://mksignasures.shop/faq",
+    canonical: "https://mksgn.shop/faq",
   },
 };
 
