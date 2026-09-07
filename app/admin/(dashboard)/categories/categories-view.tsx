@@ -75,6 +75,7 @@ export default function CategoriesView() {
   const [formSlugEdited, setFormSlugEdited] = useState(false);
   const [formImageFile, setFormImageFile] = useState<File | null>(null);
   const [formImagePreview, setFormImagePreview] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function CategoriesView() {
 
     // Upload image if present
     if (formImageFile && data?.id) {
+      setUploadingImage(true);
       const compressed = await compressImage(formImageFile);
       const arrayBuffer = await compressed.blob.arrayBuffer();
       const base64 = Buffer.from(arrayBuffer).toString("base64");
@@ -156,6 +158,7 @@ export default function CategoriesView() {
         await updateCategory(data.id, { image_url: url });
         data.image_url = url;
       }
+      setUploadingImage(false);
     }
 
     setCategories((prev) => [...prev, data]);
@@ -483,6 +486,11 @@ export default function CategoriesView() {
                   >
                     <X className="w-4 h-4" />
                   </button>
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button

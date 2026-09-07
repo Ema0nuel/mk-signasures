@@ -4,6 +4,10 @@ import {
   getRecommendedProducts,
 } from "@/lib/data/products";
 import { getCategories } from "@/lib/data/categories";
+import {
+  getActiveHeroBanner,
+  getActiveAnnouncement,
+} from "@/lib/data/customization";
 import HeroSection from "@/components/home/hero-section";
 import TickerTape from "@/components/home/ticker-tape";
 import CategoriesSection from "@/components/home/categories-section";
@@ -26,15 +30,18 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [newArrivals, recommended, categories] = await Promise.all([
-    getNewArrivals(),
-    getRecommendedProducts(),
-    getCategories(),
-  ]);
+  const [newArrivals, recommended, categories, heroBanner, announcement] =
+    await Promise.all([
+      getNewArrivals(),
+      getRecommendedProducts(),
+      getCategories(),
+      getActiveHeroBanner(),
+      getActiveAnnouncement(),
+    ]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <HeroSection />
+      <HeroSection banner={heroBanner} announcement={announcement} />
       <TickerTape />
       <CategoriesSection categories={categories} />
       <FeaturedSection

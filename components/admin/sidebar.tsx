@@ -8,6 +8,7 @@ import {
   FolderTree,
   ShoppingCart,
   Users,
+  Paintbrush,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { label: "Categories", href: "/categories", icon: FolderTree },
   { label: "Orders", href: "/orders", icon: ShoppingCart },
   { label: "Customers", href: "/customers", icon: Users },
+  { label: "Customization", href: "/customization", icon: Paintbrush },
 ];
 
 interface AdminSidebarProps {

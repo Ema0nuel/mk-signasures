@@ -36,6 +36,12 @@ export type ImageProcessingStatus =
   | "completed"
   | "failed";
 
+export type BannerMediaType = "photo" | "video" | "photo_video";
+
+export type BannerTransition = "fade" | "smooth" | "static";
+
+export type CtaVariant = "primary" | "secondary";
+
 // ============================================================
 // Row Types (one per table)
 // ============================================================
@@ -253,6 +259,56 @@ export interface ProductReview {
   updated_at: string;
 }
 
+export interface HeroBanner {
+  id: string;
+  name: string;
+  is_active: boolean;
+  transition: BannerTransition;
+  autoplay_ms: number;
+  consistent_text: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  banner_id: string;
+  media_type: BannerMediaType;
+  image_url: string | null;
+  video_url: string | null;
+  headline: string;
+  subtext: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HeroSlideCta {
+  id: string;
+  slide_id: string;
+  label: string;
+  href: string;
+  variant: CtaVariant;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface SiteAnnouncement {
+  id: string;
+  is_active: boolean;
+  headline: string;
+  subtext: string;
+  media_url: string | null;
+  media_type: string | null;
+  cta_label: string | null;
+  cta_href: string | null;
+  bg_color: string;
+  text_color: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // ============================================================
 // Relation Types (joined / expanded)
 // ============================================================
@@ -294,6 +350,16 @@ export interface CartItemExpanded extends CartItem {
 /** Order with its items */
 export interface OrderWithItems extends Order {
   order_items: OrderItem[];
+}
+
+/** Hero slide with its CTA buttons */
+export interface HeroSlideWithCtas extends HeroSlide {
+  hero_slide_ctas: HeroSlideCta[];
+}
+
+/** Hero banner with its slides (each slide includes CTAs) */
+export interface HeroBannerWithSlides extends HeroBanner {
+  hero_slides: HeroSlideWithCtas[];
 }
 
 // ============================================================

@@ -386,8 +386,14 @@ export default function CategoryDetailView({
                 disabled={uploadingImage}
                 className="w-full border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-muted-foreground transition-colors"
               >
-                <ImageIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">Upload category image</p>
+                {uploadingImage ? (
+                  <Loader2 className="w-8 h-8 text-muted-foreground mx-auto mb-2 animate-spin" />
+                ) : (
+                  <ImageIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {uploadingImage ? "Uploading..." : "Upload category image"}
+                </p>
               </button>
             )}
             <p className="text-xs text-muted-foreground">

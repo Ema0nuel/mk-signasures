@@ -24,4 +24,13 @@ export type {
   ProcessOrderResponse,
   SyncCartRequest,
   SyncCartResponse,
+  HeroBanner,
+  HeroSlide,
+  HeroSlideCta,
+  HeroBannerWithSlides,
+  HeroSlideWithCtas,
+  SiteAnnouncement,
+  BannerMediaType,
+  BannerTransition,
+  CtaVariant,
 } from "./database";
