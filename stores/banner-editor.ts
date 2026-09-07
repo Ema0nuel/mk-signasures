@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import type { HeroSlideCta } from "@/types/database";
 
+function tempId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return `temp_${crypto.randomUUID()}`;
+  }
+  return `temp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
 export interface SlideCTA extends HeroSlideCta {
   /** Temporary ID for newly added CTAs that haven't been saved to DB yet */
   _isNew?: boolean;
@@ -47,7 +54,7 @@ export const useBannerEditorStore = create<BannerEditorState>((set, get) => ({
   addCta: () => {
     const { ctas } = get();
     const newCta: SlideCTA = {
-      id: `temp_${crypto.randomUUID()}`,
+      id: tempId(),
       slide_id: "",
       label: "Button",
       href: "/shop",

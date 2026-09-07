@@ -12,11 +12,10 @@ import {
   createSlideCta,
   updateSlideCta,
   deleteSlideCta,
-  uploadSiteMedia,
-  deleteSiteMedia,
 } from "@/app/admin/actions/customization";
 import { compressImage } from "@/lib/image-compress";
 import { convertVideo } from "@/lib/video-convert";
+import { deleteFromStorage } from "@/lib/supabase/upload";
 import { getSiteRoutes } from "@/app/admin/actions/routes";
 import { useBannerEditorStore, type SlideCTA } from "@/stores/banner-editor";
 import { Input } from "@/components/ui/input";
@@ -52,6 +51,23 @@ interface Banner extends HeroBannerWithSlides {
   hero_slides: Slide[];
 }
 
+async function adminUpload(
+  bucket: string,
+  path: string,
+  file: File | Blob,
+  contentType: string
+): Promise<{ url: string | null; error: string | null }> {
+  const formData = new FormData();
+  formData.append("file", file, path.split("/").pop() || "file");
+  formData.append("bucket", bucket);
+  formData.append("path", path);
+
+  const res = await fetch("/api/admin-upload", { method: "POST", body: formData });
+  const data = await res.json();
+  if (!res.ok) return { url: null, error: data.error || "Upload failed" };
+  return { url: data.url, error: null };
+}
+
 export default function BannerEditorView({ bannerId }: { bannerId: string }) {
   const router = useRouter();
   const [banner, setBanner] = useState<Banner | null>(null);
@@ -64,6 +80,7 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
   const [transition, setTransition] = useState<string>("fade");
   const [autoplayMs, setAutoplayMs] = useState(5000);
   const [consistentText, setConsistentText] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
 
   // Delete dialog
   const [deleteSlideId, setDeleteSlideId] = useState<string | null>(null);
@@ -97,6 +114,7 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
     setTransition(data.transition);
     setAutoplayMs(data.autoplay_ms);
     setConsistentText(data.consistent_text ?? false);
+    setPlaybackRate(data.playback_rate ?? 1.0);
     // Hydrate CTA store with first slide's CTAs
     const firstSlide = data.hero_slides?.[0];
     if (firstSlide) {
@@ -123,6 +141,7 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
       transition,
       autoplay_ms: autoplayMs,
       consistent_text: consistentText,
+      playback_rate: playbackRate,
     });
     if (error) {
       toast.error(error);
@@ -139,20 +158,42 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
   async function handleAddSlide() {
     if (slides.length >= 10) return;
     setSaving(true);
+
+    // When consistent text is on, carry over text from slide 0
+    const sourceSlide = consistentText && slides.length > 0 ? slides[0] : null;
+
     const { data, error } = await createHeroSlide({
       banner_id: bannerId,
       sort_order: slides.length,
+      headline: sourceSlide?.headline ?? "",
+      subtext: sourceSlide?.subtext ?? "",
     });
     if (error) {
       toast.error(error);
       setSaving(false);
       return;
     }
+
+    // Also copy CTAs from slide 0 when consistent text is on
+    const newCtas: SlideCTA[] = [];
+    if (sourceSlide?.hero_slide_ctas) {
+      for (const cta of sourceSlide.hero_slide_ctas) {
+        const { data: ctaData } = await createSlideCta({
+          slide_id: data.id,
+          label: cta.label,
+          href: cta.href,
+          variant: cta.variant,
+          sort_order: cta.sort_order,
+        });
+        if (ctaData) newCtas.push(ctaData as SlideCTA);
+      }
+    }
+
     setBanner((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
-        hero_slides: [...prev.hero_slides, { ...data, hero_slide_ctas: [] }],
+        hero_slides: [...prev.hero_slides, { ...data, hero_slide_ctas: newCtas }],
       };
     });
     setActiveSlide(slides.length);
@@ -173,8 +214,8 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
     } else {
       // Clean up media files
       const slide = slides.find((s) => s.id === deleteSlideId);
-      if (slide?.image_url) await deleteSiteMedia(slide.image_url);
-      if (slide?.video_url) await deleteSiteMedia(slide.video_url);
+      if (slide?.image_url) await deleteFromStorage("site-media", slide.image_url);
+      if (slide?.video_url) await deleteFromStorage("site-media", slide.video_url);
 
       setBanner((prev) => {
         if (!prev) return prev;
@@ -209,18 +250,17 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
 
     // Delete old image if replacing
     if (currentSlide.image_url) {
-      await deleteSiteMedia(currentSlide.image_url);
+      await deleteFromStorage("site-media", currentSlide.image_url);
     }
 
     const compressed = await compressImage(file);
-    const arrayBuffer = await compressed.blob.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const path = `banners/${bannerId}/slides/${currentSlide.id}/${Date.now()}-${compressed.fileName}`;
 
-    const { url, error } = await uploadSiteMedia(
-      base64,
-      compressed.fileName,
-      compressed.mimeType,
-      `banners/${bannerId}/slides/${currentSlide.id}`
+    const { url, error } = await adminUpload(
+      "site-media",
+      path,
+      compressed.blob,
+      compressed.mimeType
     );
 
     if (error || !url) {
@@ -260,7 +300,7 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
 
     // Delete old video if replacing
     if (currentSlide.video_url) {
-      await deleteSiteMedia(currentSlide.video_url);
+      await deleteFromStorage("site-media", currentSlide.video_url);
     }
 
     try {
@@ -276,19 +316,24 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
         }
       });
 
-      // Upload converted MP4
+      // Upload converted MP4 via server action (bypasses RLS)
       setVideoProgress({ stage: "uploading", percent: 0 });
-      const arrayBuffer = await convertedBlob.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString("base64");
 
-      setVideoProgress({ stage: "uploading", percent: 50 });
-      const { url, error } = await uploadSiteMedia(
-        base64,
-        `slide-${currentSlide.id}.mp4`,
-        "video/mp4",
-        `banners/${bannerId}/slides/${currentSlide.id}`
+      // Debug: log converted file details
+      console.log("Converted blob:", {
+        type: convertedBlob.type,
+        sizeBytes: convertedBlob.size,
+        sizeMB: (convertedBlob.size / (1024 * 1024)).toFixed(2),
+      });
+
+      const path = `banners/${bannerId}/slides/${currentSlide.id}/${Date.now()}.mp4`;
+
+      const { url, error } = await adminUpload(
+        "site-media",
+        path,
+        convertedBlob,
+        "video/mp4"
       );
-      setVideoProgress({ stage: "uploading", percent: 100 });
 
       if (error || !url) {
         toast.error(`Upload failed: ${error}`);
@@ -318,7 +363,7 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
     setSaving(true);
 
     const url = type === "image" ? currentSlide.image_url : currentSlide.video_url;
-    if (url) await deleteSiteMedia(url);
+    if (url) await deleteFromStorage("site-media", url);
 
     await updateHeroSlide(currentSlide.id, {
       [type === "image" ? "image_url" : "video_url"]: null,
@@ -557,6 +602,27 @@ export default function BannerEditorView({ bannerId }: { bannerId: string }) {
                 Only the media changes.
               </p>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Video Playback Speed</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={0.1}
+                max={2.0}
+                step={0.1}
+                value={playbackRate}
+                onChange={(e) => setPlaybackRate(Number(e.target.value))}
+                className="flex-1 h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
+              />
+              <span className="text-sm font-medium tabular-nums w-10 text-right">
+                {playbackRate.toFixed(1)}x
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Slow: 0.5x, Normal: 1.0x, Fast: 1.5x. Videos advance to next slide when finished.
+            </p>
           </div>
         </div>
       </div>
@@ -905,27 +971,6 @@ function SlideMediaUpload({
               <Trash2 className="w-3.5 h-3.5 text-red-600" />
             </button>
           </div>
-          {saving && (
-            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">
-              {videoProgress ? (
-                <>
-                  <Film className="w-5 h-5 text-white animate-pulse" />
-                  <div className="w-48 space-y-1.5">
-                    <p className="text-xs text-white text-center">{stageLabel}</p>
-                    <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green-400 rounded-full transition-all duration-300"
-                        style={{ width: `${videoProgress.percent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-white/60 text-center">{videoProgress.percent}%</p>
-                  </div>
-                </>
-              ) : (
-                <Loader2 className="w-5 h-5 animate-spin text-white" />
-              )}
-            </div>
-          )}
         </div>
       ) : (
         <button
@@ -942,9 +987,25 @@ function SlideMediaUpload({
             {type === "image" ? "Upload slide image" : "Upload any video format"}
           </p>
           <p className="text-xs text-muted-foreground/60 mt-1">
-            {type === "image" ? "JPEG, PNG, or WebP" : "MP4 or WebM, max 100MB"}
+            {type === "image" ? "JPEG, PNG, or WebP" : "MP4 or WebM, max 200MB"}
           </p>
         </button>
+      )}
+      {/* Progress bar below the upload area */}
+      {videoProgress && (
+        <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-2">
+          <div className="flex items-center gap-2">
+            <Film className="w-4 h-4 text-primary animate-pulse" />
+            <p className="text-sm font-medium">{stageLabel}</p>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${videoProgress.percent}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground text-right">{videoProgress.percent}%</p>
+        </div>
       )}
     </div>
   );

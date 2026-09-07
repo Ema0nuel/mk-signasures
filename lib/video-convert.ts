@@ -56,13 +56,13 @@ export async function convertVideo(
   await ffmpeg.writeFile(inputName, await fetchFile(file));
   onProgress("compressing", 100);
 
-  // Convert to H.264 MP4 with compression
+  // Convert to H.264 MP4 with compression, no audio (banner videos are silent)
   // -c:v libx264: H.264 codec for universal compatibility
-  // -crf 28: reasonable quality with good compression (lower = better quality)
+  // -crf 28: reasonable quality with good compression
   // -preset fast: balance between speed and compression
   // -vf scale=-2:720: cap at 720p height, maintain aspect ratio
-  // -c:a aac: AAC audio codec
-  // -b:a 128k: audio bitrate
+  // -an: strip audio entirely (reduces file size)
+  // -movflags +faststart: move metadata to beginning for streaming
   onProgress("converting", 0);
   await ffmpeg.exec([
     "-i", inputName,
@@ -70,8 +70,7 @@ export async function convertVideo(
     "-crf", "28",
     "-preset", "fast",
     "-vf", "scale=-2:720",
-    "-c:a", "aac",
-    "-b:a", "128k",
+    "-an",
     "-movflags", "+faststart",
     outputName,
   ]);
@@ -83,8 +82,12 @@ export async function convertVideo(
   await ffmpeg.deleteFile(inputName);
   await ffmpeg.deleteFile(outputName);
 
-  // Convert to Blob — normalize to plain Uint8Array for BlobPart compatibility
+  // Validate output is not empty
   const bytes = new Uint8Array(data as Uint8Array);
+  if (bytes.length === 0) {
+    throw new Error("Conversion produced an empty file");
+  }
+
   return new Blob([bytes], { type: "video/mp4" });
 }
 

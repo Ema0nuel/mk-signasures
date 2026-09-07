@@ -266,6 +266,7 @@ export interface HeroBanner {
   transition: BannerTransition;
   autoplay_ms: number;
   consistent_text: boolean;
+  playback_rate: number;
   sort_order: number;
   created_at: string;
   updated_at: string;

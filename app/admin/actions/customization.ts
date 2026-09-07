@@ -81,6 +81,7 @@ export async function updateHeroBanner(
     sort_order: number;
     is_active: boolean;
     consistent_text: boolean;
+    playback_rate: number;
   }>
 ) {
   const supabase = getAdminClient();

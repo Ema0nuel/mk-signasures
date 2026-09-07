@@ -132,6 +132,7 @@ export default function HeroSection({
   const transition = banner?.transition ?? "fade";
   const autoplayMs = banner?.autoplay_ms ?? 5000;
   const consistentText = banner?.consistent_text ?? false;
+  const playbackRate = banner?.playback_rate ?? 1.0;
 
   const [current, setCurrent] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -145,6 +146,14 @@ export default function HeroSection({
   );
 
   useEffect(() => {
+    // If current slide has a video, let the video duration drive the timing
+    const activeSlide = slides[current];
+    if (activeSlide?.video_url && videoRef.current) {
+      // Video onEnded will advance the slide; no interval needed for this slide
+      return;
+    }
+
+    // Fallback: use autoplay interval for image-only slides
     intervalRef.current = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, autoplayMs);
@@ -152,15 +161,21 @@ export default function HeroSection({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [autoplayMs, slides.length]);
+  }, [autoplayMs, slides.length, current, slides]);
 
-  // Play/pause video on slide change
+  // Play/pause video and set playback rate on slide change
   useEffect(() => {
     const activeSlide = slides[current];
     if (activeSlide?.video_url && videoRef.current) {
+      videoRef.current.playbackRate = playbackRate;
       videoRef.current.play().catch(() => {});
     }
-  }, [current, slides]);
+  }, [current, slides, playbackRate]);
+
+  // Advance to next slide when video ends
+  function handleVideoEnded() {
+    setCurrent((prev) => (prev + 1) % slides.length);
+  }
 
   const handleDotClick = (index: number) => {
     goTo(index);
@@ -221,9 +236,9 @@ export default function HeroSection({
                     src={slide.video_url!}
                     className="absolute inset-0 w-full h-full object-cover"
                     muted
-                    loop
                     playsInline
                     preload={isActive ? "auto" : "metadata"}
+                    onEnded={handleVideoEnded}
                   />
                 )}
 
