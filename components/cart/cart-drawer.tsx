@@ -2,13 +2,15 @@
 
 import { Minus, Plus, ShoppingBag, X, Trash2, ArrowLeft } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCartDrawer } from "@/components/cart/cart-drawer-provider";
 import { useCartStore } from "@/stores/cart";
 import { useCartItems, type CartItemWithDetails } from "@/hooks/use-cart-items";
+import { useAuthStore } from "@/stores/auth";
+import { useAuthDialog } from "@/components/auth-dialog-provider";
 
 const FREE_DELIVERY_THRESHOLD = 100000;
 
@@ -161,6 +163,18 @@ export default function CartDrawer() {
   const { isOpen, close } = useCartDrawer();
   const itemCount = useCartStore((s) => s.getItemCount());
   const { items, isLoading } = useCartItems();
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const { open: openAuth } = useAuthDialog();
+
+  function handleCheckout() {
+    close();
+    if (!isAuthenticated) {
+      openAuth();
+      return;
+    }
+    router.push("/checkout");
+  }
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.variant.price * item.quantity,
@@ -280,13 +294,12 @@ export default function CartDrawer() {
                 </span>
               </div>
             </div>
-            <Link
-              href="/checkout"
-              onClick={close}
+            <button
+              onClick={handleCheckout}
               className="w-full h-12 inline-flex items-center justify-center bg-gold text-black hover:bg-gold-light font-semibold text-sm rounded-xl transition-colors"
             >
               Checkout
-            </Link>
+            </button>
             <button
               onClick={close}
               className="w-full text-center text-sm text-muted-foreground hover:text-gold transition-colors duration-150 py-1"
